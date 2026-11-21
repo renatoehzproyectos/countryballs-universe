@@ -168,7 +168,11 @@ export default class EvolutionGame {
       h('button.btn.icon-btn', { onclick: () => this.#worldsMenu() }, '🗺️', h('small', 'Mundos')), h('button.btn.icon-btn', { onclick: () => openInventory() }, '🎒', h('small', 'Mascotas')),
       h('button.btn.icon-btn', { onclick: () => openCollection() }, '📖', h('small', 'Álbum')), h('button.btn.icon-btn', { onclick: () => this.#rebirthMenu() }, '🔄', h('small', 'Renacer')),
       h('button.btn.icon-btn', { onclick: () => openShop() }, '🛒', h('small', 'Tienda')));
-    ui().append(top, back, dock, this.prompt); this.jumpBtn = h('button.btn.gold.jump.evo-jump', { onclick: () => { input.jump = true; } }, '🦘'); ui().append(this.jumpBtn); this.hudEls = [top, back, dock, this.prompt, this.jumpBtn]; this.#refreshHud();
+    ui().append(top, back, dock, this.prompt); this.jumpBtn = h('button.btn.gold.jump.evo-jump', {
+      'aria-label': 'Saltar',
+      onpointerdown: e => { if (e.cancelable) e.preventDefault(); input.jump = true; },
+      onclick: () => { input.jump = true; }
+    }, '🦘'); ui().append(this.jumpBtn); this.hudEls = [top, back, dock, this.prompt, this.jumpBtn]; this.#refreshHud();
   }
   #refreshHud() {
     if (!this.elLevel) return; const s = store.state, e = s.evolution, nb = BALLS.filter(b => !b.secret && b.level > e.level)[0], mult = getMultipliers();

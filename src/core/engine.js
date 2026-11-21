@@ -13,10 +13,12 @@ export class Engine {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.canvas = canvas; this.app = null; this.clock = new THREE.Clock(); this.t = 0; this.running = false;
     addEventListener('resize', () => this.resize());
+    addEventListener('orientationchange', () => requestAnimationFrame(() => this.resize()));
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', () => this.resize());
     this.resize();
   }
   resize() {
-    const w = innerWidth, h = innerHeight; this.renderer.setSize(w, h, false);
+    const w = Math.max(1, document.documentElement.clientWidth || innerWidth), h = Math.max(1, document.documentElement.clientHeight || innerHeight); this.renderer.setSize(w, h, false);
     if (this.app?.camera) { this.app.camera.aspect = w / h; this.app.camera.updateProjectionMatrix(); }
     this.app?.resize?.(w, h);
   }

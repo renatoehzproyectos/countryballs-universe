@@ -69,3 +69,53 @@ input[type=range]{width:100%;accent-color:var(--blue)}
 .jump{position:fixed;right:18px;bottom:calc(120px + var(--safe-b));width:80px;height:80px;border-radius:50%;font-size:34px;padding:0;z-index:4;background:#0000004d!important;border:3px solid #ffffffaa;box-shadow:none}
 .evo-jump{right:84px;bottom:calc(36px + var(--safe-b))}
 .mission{position:fixed;top:calc(60px + var(--safe-t));left:50%;transform:translateX(-50%);max-width:92vw;text-align:center;background:linear-gradient(#ffe45c,#ffb300);color:#fff;border:3px solid var(--stroke);box-shadow:0 4px 0 var(--stroke);white-space:normal;pointer-events:none}
+
+
+/* Full mobile + multi-touch support */
+html { height:100%; height:100dvh; overscroll-behavior:none; }
+body { min-height:100%; min-height:100dvh; overscroll-behavior:none; -webkit-text-size-adjust:100%; }
+#stage { touch-action:none; }
+#ui { padding-top:var(--safe-t); padding-bottom:var(--safe-b); }
+button, .btn, .tab, .card, input, select, textarea {
+  touch-action:manipulation;
+}
+button, .btn, .tab, .card { -webkit-user-select:none; user-select:none; }
+.joy, .jump { touch-action:none !important; -webkit-user-select:none; user-select:none; }
+.joy { width:clamp(112px, 24vw, 140px); height:clamp(112px, 24vw, 140px); }
+.joy>i { width:clamp(52px, 11vw, 62px); height:clamp(52px, 11vw, 62px); }
+.jump { width:clamp(68px, 16vw, 88px); height:clamp(68px, 16vw, 88px); }
+.modal-wrap { padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)); }
+.modal { width:min(720px, 100%); max-height:min(88dvh, 900px); }
+.modal>.body { overscroll-behavior:contain; }
+.grid { grid-template-columns:repeat(auto-fill,minmax(min(130px, 42vw),1fr)); }
+@media (max-width:700px) {
+  body { font-size:15px; }
+  .hud-top { top:calc(6px + var(--safe-t)); left:6px; right:6px; gap:5px; }
+  .chip { padding:5px 8px; font-size:13px; }
+  .dock { gap:7px; bottom:calc(8px + var(--safe-b)); flex-wrap:wrap; }
+  .icon-btn { width:52px; height:52px; font-size:23px; }
+  .play { font-size:20px; padding:12px 22px; }
+  .back { top:calc(7px + var(--safe-t)); left:7px; }
+  .prompt { bottom:calc(92px + var(--safe-b)); max-width:90vw; }
+  .mission { top:calc(54px + var(--safe-t)); }
+  .joy { left:max(12px, env(safe-area-inset-left)); bottom:calc(16px + var(--safe-b)); }
+  .jump { right:max(14px, env(safe-area-inset-right)); bottom:calc(28px + var(--safe-b)); }
+  .evo-jump { right:calc(90px + env(safe-area-inset-right)); bottom:calc(22px + var(--safe-b)); }
+  .modal>header { font-size:19px; padding:10px 12px; }
+  .modal>.body { padding:11px; padding-bottom:calc(12px + var(--safe-b)); }
+  .btn { padding:9px 12px; }
+}
+@media (max-width:390px) {
+  .hud-top { flex-wrap:wrap; }
+  .chip { padding:4px 6px; font-size:12px; }
+  .joy { width:108px; height:108px; }
+  .jump { width:66px; height:66px; }
+}
+@media (max-height:520px) and (orientation:landscape) {
+  .joy { width:94px; height:94px; bottom:calc(8px + var(--safe-b)); }
+  .joy>i { width:46px; height:46px; margin:-23px; }
+  .jump { width:62px; height:62px; bottom:calc(12px + var(--safe-b)); }
+  .evo-jump { right:82px; bottom:calc(10px + var(--safe-b)); }
+  .hud-top { top:calc(4px + var(--safe-t)); }
+  .modal { max-height:92dvh; }
+}
