@@ -148,7 +148,8 @@ export class Hub {
       h('button.btn.icon-btn', { onclick: () => openInventory() }, '🎒', h('small', 'Armario')),
       h('button.btn.gold.play', { onclick: () => this.openGames() }, '▶ JUGAR'),
       h('button.btn.icon-btn', { onclick: () => openCollection() }, '📖', h('small', 'Álbum')),
-      h('button.btn.icon-btn', { onclick: () => openProfile() }, '👤', h('small', 'Perfil')));
+      h('button.btn.icon-btn', { onclick: () => openProfile() }, '👤', h('small', 'Perfil')),
+      h('a.btn.icon-btn', { href: '/downloads/countryballs-universe.zip', download: 'countryballs-universe.zip', title: 'Descargar el juego (.zip)' }, '⬇️', h('small', 'Descargar')));
     this.prompt = h('button.btn.green.prompt', { style: { display: 'none' }, onclick: () => this.near?.action() });
     this.mission = h('div.chip.mission'); this.jumpBtn = h('button.btn.gold.jump', { onclick: () => { input.jump = true; } }, '🦘');
     this.emoteBtn = h('button.btn.icon-btn', { style: { position: 'fixed', left: '22px', bottom: 'calc(170px + env(safe-area-inset-bottom))' }, onclick: () => this.#emote() }, '😄');

@@ -1,56 +1,46 @@
-# 🌍 Countryballs Universe
+# Countryballs Universe
 
-One 3D browser universe, three interconnected games, one persistent profile.
-Vanilla **ES Modules + Three.js + Vite**. No backend, no external requests at runtime — deploys to Vercel as a static site.
+Un universo 3D de Countryballs con tres juegos que comparten un mismo perfil:
 
-## Deploy
+- 🌍 **Evolución** — explora mundos, vence jefes, colecciona mascotas y evoluciona.
+- 🗺️ **Conquista Mundial** — haz amigos, comercia y conquista el mapa del mundo.
+- 🚩 **Adivina la bandera** — gana imperios acertando banderas.
+
+## Cómo abrirlo
+
+Necesitas [Node.js](https://nodejs.org) 18 o más nuevo.
+
 ```bash
 npm install
-npm run dev        # local dev
-npm run build      # outputs ./dist
+npm run dev
 ```
-**Vercel:** push to GitHub → *Add New Project* → import. Framework preset *Vite* is auto-detected (`vercel.json` included).
 
-## The games
-| Game | What it is |
-|---|---|
-| **3D Hub** | You start in a 3D plaza with your Countryball. Walk/drag-rotate, tap the glowing **GAMES portal** (or ▶ PLAY), Shop, Locker, Collection book, Profile. |
-| **Evolution** | Real-time 3D arena. Auto-combat, coins/XP, chests, relics, NPC quests, 7 worlds, bosses with telegraphed slams, pets, rarities, collection, **Rebirth** multipliers. Levelling *evolves* you into new Countryballs. |
-| **World Conquest** | Interactive world map (174 territories). Cities → income, factories → equipment, armies → upkeep. Alliances (defensive / military), trade (+ equipment market), non-aggression pacts, vassals & puppets, war, battles, peace deals, reputation & betrayal, personality-driven AI, historical empires. Autosaved campaign. |
-| **Guess the Flag** | Classic, Time Attack, Continents, Expert (lookalikes), Map Challenge, Daily Challenge. Mistakes are re-queued. Mastering 80 % of a continent **permanently unlocks an empire** for Conquest. |
+Abre la dirección que aparece en la terminal (por defecto `http://localhost:5173`).
 
-Empire rewards: Europe → Roman · Asia → Mongol · N+S America → Aztec · Africa → Mali · every continent → British.
+Para generar la versión final lista para subir a un hosting:
 
-## Architecture
+```bash
+npm run build
+npm run preview
 ```
-src/
-  main.js                 entry: load profile → boot 3D hub
-  core/                   shared services (no game logic)
-    manager.js            lazy-loads games, one active app at a time
-    engine.js             single WebGL renderer + RAF loop (paused for DOM games)
-    store.js              save system (localStorage, versioned, deep-merged defaults)
-    economy.js            coins/gems/XP, multipliers, achievements, secrets, unlocks
-    pets.js  audio.js  input.js  events.js
-  data/                   pure data: countryballs, pets, cosmetics, worlds, empires, rarity, geo
-  characters/             Countryball (your Blender GLB) · LiteBall · cosmetics · flag provider
-  hub/hub.js              main 3D world
-  ui/                     dom helpers, panels (shop/locker/book/profile), joystick, SVG map view
-  games/
-    evolution/            world.js (scenery) + evolution.js (gameplay)
-    conquest/             sim.js (pure logic: economy, diplomacy, war, AI) + conquest.js (UI)
-    flagquiz/             questions.js (generation, mastery) + flagquiz.js (modes, UI)
-scripts/generate-geo.mjs  builds map + country metadata from world-atlas / world-countries
-public/flags/             your flag SVG pack      public/models/  your GLB template
+
+## Estructura
+
 ```
-Module boundaries: `data/` and `games/conquest/sim.js` are DOM-free; games only talk to each other through `store`, `economy` and the `bus`.
+countryballs-universe/
+├─ index.html          pantalla que carga el juego
+├─ vite.config.js      configuración de Vite
+├─ public/
+│  ├─ flags/           banderas en SVG
+│  └─ models/          modelos 3D del countryball
+└─ src/
+   ├─ main.js          punto de entrada
+   ├─ core/            perfil, guardado, audio, motor, economía
+   ├─ data/            countryballs, mundos, emporios, mascotas, geo
+   ├─ characters/      modelo 3D, banderas, cosméticos
+   ├─ hub/             mundo central y su interfaz
+   ├─ ui/              botones, ventanas, joystick, mapa
+   └─ games/           evolución, conquista y adivina la bandera
+```
 
-## Assets used
-- Your **countryball_blender.glb**: body gets a generated flag texture + the normal map extracted from the GLB; eyes are kept. `3d_antarcita_countryball_model.glb` is kept in `public/models/` as the visual reference.
-- Your **country-flags** SVGs (all 255) in `public/flags/`.
-- Historical/fantasy flags (Rome, USSR, Mongol, Aztec, Cosmic, Gold…) are drawn procedurally; audio is synthesised.
-
-## Performance
-Mobile pixel-ratio cap, instanced scenery, ~300-tri LiteBalls for crowds/pets, each game in its own lazy chunk, inactive scenes disposed, Three.js in a separately cached chunk.
-
-## Saves
-`localStorage` key `countryballs-universe:v1`. Profile → *Erase save* resets it.
+El progreso se guarda en el propio navegador, así que no hace falta ninguna cuenta ni servidor.

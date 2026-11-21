@@ -6,7 +6,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 900,
     rollupOptions: {
       output: {
-        // Three.js is cached separately from game code; each game is its own lazy chunk.
+        // Three.js se cachea aparte del código del juego; cada juego es su propio chunk diferido.
         manualChunks: { three: ['three'] }
       }
     }

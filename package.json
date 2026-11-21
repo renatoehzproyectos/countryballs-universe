@@ -3,19 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "A 3D Countryballs universe: Evolution, World Conquest and Guess the Flag sharing one profile.",
+  "description": "Un universo 3D de Countryballs: Evolución, Conquista Mundial y Adivina la Bandera, compartiendo un mismo perfil.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "gen:geo": "node scripts/generate-geo.mjs"
+    "preview": "vite preview"
   },
   "dependencies": { "three": "^0.160.0" },
-  "devDependencies": {
-    "d3-geo": "^3.1.1",
-    "topojson-client": "^3.1.0",
-    "vite": "^5.4.0",
-    "world-atlas": "^2.0.2",
-    "world-countries": "^5.0.0"
-  }
+  "devDependencies": { "vite": "^5.4.0" }
 }
