@@ -85,7 +85,7 @@ export const ACHIEVEMENTS = [
   { id: 'flags500',    name: 'Experto en banderas',    desc: 'Acierta 500 banderas',test: s => s.stats.flagsCorrect >= 500 },
   { id: 'streak10',    name: '¡En racha!',          desc: 'Racha de 10 banderas',            test: s => s.stats.bestStreak >= 10 },
   { id: 'empire',      name: 'Heredero imperial',    desc: 'Desbloquea un imperio',test: s => s.ownedEmpires.length >= 1 },
-  { id: 'allempires',  name: 'Emperador de emperadores', desc: 'Desbloquea todos los imperios',    test: s => s.ownedEmpires.length >= 5 },
+  { id: 'allempires',  name: 'Emperador de emperadores', desc: 'Desbloquea todos los imperios',    test: s => s.ownedEmpires.length >= 30 },
   { id: 'conqueror',   name: 'Conquistador',        desc: 'Conquista 10 territorios',    test: s => s.stats.conquests >= 10 },
   { id: 'victor',      name: 'Rey del mundo',      desc: 'Gana una Conquista Mundial', test: s => s.conquest.wins >= 1 },
   { id: 'wearer',      name: 'Con mucho estilo',      desc: 'Ten 5 accesorios',           test: s => s.ownedCosmetics.length >= 5 }

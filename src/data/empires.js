@@ -1,36 +1,39 @@
 /**
- * Historical empires. They are unlocked in Guess the Flag and playable in World Conquest.
- * `regions` = ISO codes of the map regions that start under the empire's control.
- * Modifiers keep them powerful but balanced (each has a strength AND a weakness).
+ * Historical empires playable in World Conquest.
+ * Every empire can also be unlocked through Countryballs Evolution by reaching its level.
+ * Regions are validated against the bundled political map.
  */
 export const EMPIRES = {
-  rome: { id: 'rome', name: 'Imperio Romano', flag: 'rome', color: '#b3202a', capital: 'IT',
-    blurb: 'Legiones valientes y caminos, pero vecinos muy enfadados.',
-    mods: { income: 1.0, troops: 1.35, equipment: 1.0, hostile: ['DE', 'PL', 'RU', 'UA'] },
-    regions: ['IT', 'FR', 'ES', 'PT', 'GB', 'GR', 'TR', 'EG', 'LY', 'TN', 'DZ', 'MA', 'BG', 'RO', 'AL', 'HR', 'RS', 'BA', 'ME', 'MK', 'SI', 'CH', 'AT', 'BE', 'LU', 'SY', 'LB', 'IL', 'JO', 'CY', 'HU'],
-    reward: { quiz: 'Europe' } },
-  british: { id: 'british', name: 'Imperio Británico', flag: 'british', color: '#c8102e', capital: 'GB',
-    blurb: 'Muy rico y con tierras por todo el mundo, pero difícil de proteger.',
-    mods: { income: 1.3, troops: 0.8, equipment: 1.2, hostile: [] },
-    regions: ['GB', 'IE', 'CA', 'AU', 'NZ', 'IN', 'PK', 'BD', 'LK', 'MM', 'MY', 'ZA', 'NG', 'GH', 'KE', 'UG', 'TZ', 'ZM', 'ZW', 'SD', 'EG', 'IQ', 'JO', 'YE', 'GY', 'BZ', 'JM', 'SL'],
-    reward: { quiz: 'All' } },
-  mongol: { id: 'mongol', name: 'Imperio Mongol', flag: 'mongol', color: '#2a6fd6', capital: 'MN',
-    blurb: 'Ejércitos enormes, pero poco dinero.',
-    mods: { income: 0.7, troops: 1.7, equipment: 0.8, hostile: [] },
-    regions: ['MN', 'CN', 'KZ', 'KG', 'UZ', 'TM', 'TJ', 'AF', 'IR', 'IQ', 'RU', 'UA', 'BY', 'KR', 'KP', 'AZ', 'GE', 'AM', 'TR', 'PL', 'HU'],
-    reward: { quiz: 'Asia' } },
-  aztec: { id: 'aztec', name: 'Imperio Azteca', flag: 'aztec', color: '#16a085', capital: 'MX',
-    blurb: 'Mucha gente, pero armas muy antiguas.',
-    mods: { income: 0.9, troops: 1.3, equipment: 0.5, hostile: ['US', 'CO'] },
-    regions: ['MX', 'GT', 'BZ', 'SV', 'HN', 'NI', 'CR', 'PA', 'CU', 'DO', 'HT', 'JM', 'CO', 'EC'],
-    reward: { quiz: 'Americas' } },
-  mali_empire: { id: 'mali_empire', name: 'Imperio de Mali', flag: 'mali_empire', color: '#e8b923', capital: 'ML',
-    blurb: 'Montañas de oro, pero pocos soldados.',
-    mods: { income: 1.7, troops: 0.7, equipment: 0.9, hostile: [] },
-    regions: ['ML', 'SN', 'GM', 'GN', 'MR', 'BF', 'NE', 'NG', 'CI', 'GH', 'SL', 'LR', 'TD', 'DZ', 'BJ', 'TG'],
-    reward: { quiz: 'Africa' } }
+  rome: { id: 'rome', name: "Imperio Romano", flag: 'rome', color: '#b3202a', capital: 'IT', level: 44, blurb: "Legiones, calzadas y una administración formidable.", mods: { income: 1.0, troops: 1.35, equipment: 1.0, hostile: [] }, regions: ['IT', 'FR', 'ES', 'PT', 'GB', 'GR', 'TR', 'EG', 'LY', 'TN', 'DZ', 'MA', 'BG', 'RO', 'AL', 'HR', 'RS', 'BA', 'ME', 'MK', 'SI', 'CH', 'AT', 'BE', 'LU', 'SY', 'LB', 'IL', 'JO', 'CY', 'HU'], reward: { quiz: 'All' } },
+  british: { id: 'british', name: "Imperio Británico", flag: 'british', color: '#c8102e', capital: 'GB', level: 92, blurb: "Una red mundial de colonias y rutas comerciales.", mods: { income: 1.3, troops: 0.8, equipment: 1.2, hostile: [] }, regions: ['GB', 'IE', 'CA', 'AU', 'NZ', 'IN', 'PK', 'BD', 'LK', 'MM', 'MY', 'ZA', 'NG', 'GH', 'KE', 'UG', 'TZ', 'ZM', 'ZW', 'SD', 'EG', 'IQ', 'JO', 'YE', 'GY', 'BZ', 'JM', 'SL'], reward: { quiz: 'All' } },
+  mongol: { id: 'mongol', name: "Imperio Mongol", flag: 'mongol', color: '#2a6fd6', capital: 'MN', level: 48, blurb: "Movilidad y caballería para dominar enormes distancias.", mods: { income: 0.7, troops: 1.7, equipment: 0.8, hostile: [] }, regions: ['MN', 'CN', 'KZ', 'KG', 'UZ', 'TM', 'TJ', 'AF', 'IR', 'IQ', 'RU', 'UA', 'BY', 'KR', 'KP', 'AZ', 'GE', 'AM', 'TR', 'PL', 'HU'], reward: { quiz: 'All' } },
+  aztec: { id: 'aztec', name: "Imperio Azteca", flag: 'aztec', color: '#16a085', capital: 'MX', level: 52, blurb: "Una potencia mesoamericana con grandes ciudades.", mods: { income: 0.9, troops: 1.3, equipment: 0.5, hostile: [] }, regions: ['MX', 'GT', 'BZ', 'SV', 'HN', 'NI', 'CR', 'PA'], reward: { quiz: 'All' } },
+  mali_empire: { id: 'mali_empire', name: "Imperio de Mali", flag: 'mali_empire', color: '#e8b923', capital: 'ML', level: 56, blurb: "Riqueza comercial y rutas transaharianas.", mods: { income: 1.7, troops: 0.7, equipment: 0.9, hostile: [] }, regions: ['ML', 'SN', 'GM', 'GN', 'MR', 'BF', 'NE', 'NG', 'CI', 'GH', 'SL', 'LR', 'TD', 'DZ', 'BJ', 'TG'], reward: { quiz: 'All' } },
+  byzantine: { id: 'byzantine', name: "Imperio Bizantino", flag: 'byzantine', color: '#b51f2a', capital: 'TR', level: 60, blurb: "Diplomacia, murallas y comercio mediterráneo.", mods: { income: 1.1, troops: 1.1, equipment: 1.2, hostile: [] }, regions: ['TR', 'GR', 'BG', 'RO', 'RS', 'AL', 'MK', 'CY', 'SY', 'LB', 'IL', 'JO', 'EG'], reward: { quiz: 'All' } },
+  ottoman: { id: 'ottoman', name: "Imperio Otomano", flag: 'ottoman', color: '#e32636', capital: 'TR', level: 64, blurb: "Un imperio puente entre Europa, Asia y África.", mods: { income: 1.1, troops: 1.35, equipment: 1.0, hostile: [] }, regions: ['TR', 'GR', 'BG', 'RO', 'AL', 'MK', 'RS', 'BA', 'ME', 'HU', 'CY', 'SY', 'LB', 'IL', 'JO', 'IQ', 'EG', 'LY', 'TN'], reward: { quiz: 'All' } },
+  persian: { id: 'persian', name: "Imperio Aqueménida", flag: 'persian', color: '#239f40', capital: 'IR', level: 68, blurb: "Satrapías, caminos reales y una administración extensa.", mods: { income: 1.25, troops: 1.2, equipment: 1.0, hostile: [] }, regions: ['IR', 'IQ', 'AF', 'PK', 'TR', 'SY', 'JO', 'IL', 'LB', 'EG', 'AZ', 'AM', 'GE', 'TM', 'UZ', 'TJ'], reward: { quiz: 'All' } },
+  macedonian: { id: 'macedonian', name: "Imperio Macedonio", flag: 'macedonian', color: '#d71920', capital: 'GR', level: 72, blurb: "Las campañas de Alejandro y su expansión relámpago.", mods: { income: 1.0, troops: 1.5, equipment: 1.0, hostile: [] }, regions: ['GR', 'TR', 'EG', 'IR', 'IQ', 'AF', 'PK', 'SY', 'LB', 'IL', 'JO', 'TM', 'UZ', 'TJ'], reward: { quiz: 'All' } },
+  carthage: { id: 'carthage', name: "Imperio Cartaginés", flag: 'carthage', color: '#7b1520', capital: 'TN', level: 76, blurb: "Talaso-cracia mercantil y poder naval.", mods: { income: 1.15, troops: 1.15, equipment: 1.15, hostile: [] }, regions: ['TN', 'DZ', 'LY', 'MA', 'ES', 'IT'], reward: { quiz: 'All' } },
+  spanish_empire: { id: 'spanish_empire', name: "Imperio Español", flag: 'spanish_empire', color: '#aa151b', capital: 'ES', level: 80, blurb: "Una monarquía global con rutas oceánicas.", mods: { income: 1.35, troops: 1.0, equipment: 1.15, hostile: [] }, regions: ['ES', 'MX', 'GT', 'BZ', 'SV', 'HN', 'NI', 'CR', 'PA', 'CU', 'DO', 'PR', 'CO', 'VE', 'EC', 'PE', 'BO', 'PY', 'AR', 'CL', 'UY', 'PH', 'MA'], reward: { quiz: 'All' } },
+  portuguese_empire: { id: 'portuguese_empire', name: "Imperio Portugués", flag: 'portuguese_empire', color: '#006600', capital: 'PT', level: 84, blurb: "Exploración oceánica y puestos comerciales.", mods: { income: 1.25, troops: 0.9, equipment: 1.15, hostile: [] }, regions: ['PT', 'BR', 'AO', 'MZ', 'GW', 'TL', 'IN', 'MY'], reward: { quiz: 'All' } },
+  french_empire: { id: 'french_empire', name: "Imperio Colonial Francés", flag: 'french_empire', color: '#002395', capital: 'FR', level: 88, blurb: "Influencia cultural, industria y territorios de ultramar.", mods: { income: 1.25, troops: 1.05, equipment: 1.2, hostile: [] }, regions: ['FR', 'DZ', 'TN', 'MA', 'SN', 'ML', 'NE', 'CI', 'BF', 'GN', 'TD', 'CF', 'CG', 'GA', 'CM', 'BJ', 'TG', 'MG', 'DJ', 'NC'], reward: { quiz: 'All' } },
+  german_empire: { id: 'german_empire', name: "Imperio Alemán", flag: 'german_empire', color: '#111111', capital: 'DE', level: 96, blurb: "Industria y organización militar.", mods: { income: 1.15, troops: 1.3, equipment: 1.2, hostile: [] }, regions: ['DE', 'PL', 'LT', 'LV', 'CM', 'TZ', 'RW', 'BI', 'NA'], reward: { quiz: 'All' } },
+  austro_hungarian: { id: 'austro_hungarian', name: "Imperio Austrohúngaro", flag: 'austro_hungarian', color: '#d6ad43', capital: 'AT', level: 100, blurb: "Un mosaico multinacional en el corazón europeo.", mods: { income: 1.1, troops: 1.2, equipment: 1.05, hostile: [] }, regions: ['AT', 'HU', 'CZ', 'SK', 'SI', 'HR', 'BA', 'PL', 'UA', 'RO', 'RS', 'ME', 'IT'], reward: { quiz: 'All' } },
+  japanese_empire: { id: 'japanese_empire', name: "Imperio Japonés", flag: 'japanese_empire', color: '#bc002d', capital: 'JP', level: 104, blurb: "Poder naval e industrial del Pacífico.", mods: { income: 1.1, troops: 1.4, equipment: 1.2, hostile: [] }, regions: ['JP', 'KR', 'KP', 'TW', 'CN', 'PH', 'MY', 'ID'], reward: { quiz: 'All' } },
+  qing: { id: 'qing', name: "Imperio Qing", flag: 'qing', color: '#f4d03f', capital: 'CN', level: 108, blurb: "La última gran dinastía imperial china.", mods: { income: 1.3, troops: 1.25, equipment: 1.0, hostile: [] }, regions: ['CN', 'MN', 'TW'], reward: { quiz: 'All' } },
+  russian_empire: { id: 'russian_empire', name: "Imperio Ruso", flag: 'russian_empire', color: '#2455a4', capital: 'RU', level: 112, blurb: "Extensión continental y abundantes recursos.", mods: { income: 1.1, troops: 1.4, equipment: 1.0, hostile: [] }, regions: ['RU', 'FI', 'EE', 'LV', 'LT', 'BY', 'UA', 'MD', 'GE', 'AM', 'AZ', 'KZ', 'UZ', 'TM', 'KG', 'TJ', 'PL'], reward: { quiz: 'All' } },
+  soviet_empire: { id: 'soviet_empire', name: "Unión Soviética", flag: 'soviet_empire', color: '#cc0000', capital: 'RU', level: 116, blurb: "Industria pesada, ciencia y gran capacidad militar.", mods: { income: 1.3, troops: 1.5, equipment: 1.2, hostile: [] }, regions: ['RU', 'UA', 'BY', 'MD', 'GE', 'AM', 'AZ', 'KZ', 'UZ', 'TM', 'KG', 'TJ', 'LT', 'LV', 'EE'], reward: { quiz: 'All' } },
+  inca: { id: 'inca', name: "Imperio Inca", flag: 'inca', color: '#f7d117', capital: 'PE', level: 120, blurb: "Caminos andinos, terrazas y una administración eficiente.", mods: { income: 1.1, troops: 1.35, equipment: 0.9, hostile: [] }, regions: ['PE', 'EC', 'BO', 'CL', 'AR', 'CO'], reward: { quiz: 'All' } },
+  maya: { id: 'maya', name: "Civilización Maya", flag: 'maya', color: '#087f5b', capital: 'GT', level: 124, blurb: "Ciudades-estado, astronomía y comercio mesoamericano.", mods: { income: 1.1, troops: 1.0, equipment: 1.0, hostile: [] }, regions: ['GT', 'BZ', 'MX', 'HN', 'SV'], reward: { quiz: 'All' } },
+  brazil_empire: { id: 'brazil_empire', name: "Imperio del Brasil", flag: 'brazil_empire', color: '#009b3a', capital: 'BR', level: 128, blurb: "Una monarquía sudamericana de gran territorio.", mods: { income: 1.2, troops: 1.15, equipment: 1.1, hostile: [] }, regions: ['BR'], reward: { quiz: 'All' } },
+  khmer: { id: 'khmer', name: "Imperio Jemer", flag: 'khmer', color: '#032ea1', capital: 'KH', level: 132, blurb: "Ingeniería hidráulica y grandes complejos urbanos.", mods: { income: 1.1, troops: 1.15, equipment: 1.0, hostile: [] }, regions: ['KH', 'TH', 'LA', 'VN', 'MY'], reward: { quiz: 'All' } },
+  songhai: { id: 'songhai', name: "Imperio Songhai", flag: 'songhai', color: '#168a45', capital: 'ML', level: 136, blurb: "Control de rutas comerciales del río Níger.", mods: { income: 1.35, troops: 1.0, equipment: 1.0, hostile: [] }, regions: ['ML', 'NE', 'NG', 'BF', 'SN', 'GM', 'GN'], reward: { quiz: 'All' } },
+  ghana_empire: { id: 'ghana_empire', name: "Imperio de Ghana", flag: 'ghana_empire', color: '#d71920', capital: 'ML', level: 140, blurb: "Oro, sal y comercio transahariano.", mods: { income: 1.4, troops: 0.9, equipment: 0.95, hostile: [] }, regions: ['ML', 'MR', 'SN', 'GN', 'BF'], reward: { quiz: 'All' } },
+  ethiopian_empire: { id: 'ethiopian_empire', name: "Imperio Etíope", flag: 'ethiopian_empire', color: '#078930', capital: 'ET', level: 144, blurb: "Un reino histórico con larga continuidad.", mods: { income: 1.0, troops: 1.2, equipment: 1.0, hostile: [] }, regions: ['ET', 'ER', 'DJ', 'SO', 'SD'], reward: { quiz: 'All' } },
+  mughal: { id: 'mughal', name: "Imperio Mogol", flag: 'mughal', color: '#006a4e', capital: 'IN', level: 148, blurb: "Arte, arquitectura y administración del subcontinente.", mods: { income: 1.3, troops: 1.25, equipment: 1.0, hostile: [] }, regions: ['IN', 'PK', 'BD', 'AF'], reward: { quiz: 'All' } },
+  delhi: { id: 'delhi', name: "Sultanato de Delhi", flag: 'delhi', color: '#1b5e20', capital: 'IN', level: 152, blurb: "Una potencia medieval del norte de India.", mods: { income: 1.15, troops: 1.15, equipment: 1.0, hostile: [] }, regions: ['IN', 'PK', 'BD'], reward: { quiz: 'All' } },
+  vijayanagara: { id: 'vijayanagara', name: "Imperio Vijayanagara", flag: 'vijayanagara', color: '#f7d117', capital: 'IN', level: 156, blurb: "Un centro político y comercial del sur de India.", mods: { income: 1.1, troops: 1.1, equipment: 1.0, hostile: [] }, regions: ['IN'], reward: { quiz: 'All' } },
+  polish_lithuanian: { id: 'polish_lithuanian', name: "Mancomunidad Polaco-Lituana", flag: 'polish_lithuanian', color: '#d4213d', capital: 'PL', level: 160, blurb: "Un imperio histórico con ventajas y desafíos propios.", mods: { income: 1.1, troops: 1.15, equipment: 1.0, hostile: [] }, regions: ['PL', 'LT', 'BY', 'UA', 'LV', 'EE'], reward: { quiz: 'All' } },
 };
-export const EMPIRE_REQ = {
-  rome: 'Domina Europa en Adivina la bandera', mongol: 'Domina Asia en Adivina la bandera', aztec: 'Domina América del Norte y del Sur en Adivina la bandera',
-  mali_empire: 'Domina África en Adivina la bandera', british: 'Domina TODOS los continentes en Adivina la bandera'
-};
+
+export const EMPIRE_REQ = Object.fromEntries(Object.values(EMPIRES).map(e => [e.id, `Alcanza el nivel ${e.level} en Countryballs Evolution`]));

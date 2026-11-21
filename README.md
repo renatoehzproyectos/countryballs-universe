@@ -58,3 +58,10 @@ Rehecha siguiendo el análisis de *Take Over The World!*:
 - **Imperios históricos** que renacen al controlar el 70 % de su territorio, **superpoderes** (EE. UU., China, Rusia, Reino Unido) y **carrera espacial** de 7 fases hasta plantar la bandera en la Luna.
 - **Bots** en todos los demás países (expanden, construyen, investigan, pactan, atacan, piden paz y compiten por la Luna).
 - Victoria: dominar el 60 % del mundo (con títeres) o plantar la bandera en la Luna.
+
+
+## Actualización: Countryballs e imperios
+
+- Se conserva la bandera completa en la textura frontal de los Countryballs; ya no se recortan cantones ni estrellas. Chile tiene una bandera dibujada explícitamente con su estrella blanca.
+- Se añadieron 29 imperios y estados históricos para Conquista Mundial.
+- Cada imperio tiene su Countryball y se desbloquea en Countryballs Evolution al alcanzar el nivel indicado; al desbloquearlo queda disponible como nación inicial en Conquista Mundial.

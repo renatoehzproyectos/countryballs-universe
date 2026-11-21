@@ -52,9 +52,10 @@ export async function getFlagTexture(key) {
   const S = 1024, c = document.createElement('canvas'); c.width = c.height = S;
   const g = c.getContext('2d');
   const sw = img.naturalWidth || img.width || 3, sh = img.naturalHeight || img.height || 2;
-  const aspect = sw / sh, f = Math.min(1, Math.max(1 / aspect, 0.62));
+  // Fit the COMPLETE flag to the visible Countryball face. Never center-crop:
+  // the Chilean star/canton and other corner emblems must remain visible.
   g.imageSmoothingQuality = 'high';
-  g.drawImage(img, (sw * (1 - f)) / 2, 0, sw * f, sh, 0, 0, S, S);
+  g.drawImage(img, 0, 0, sw, sh, 0, 0, S, S);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
   textures.set(key, t); return t;
 }

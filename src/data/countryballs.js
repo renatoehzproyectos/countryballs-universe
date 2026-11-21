@@ -29,7 +29,20 @@ export const BALLS = [
   ]),
   ...tier('legendary', [
     ['su', 'Soviético-ball', 62], ['rome', 'Imperio Romano-ball', 66], ['british', 'Imperio Británico-ball', 70],
-    ['mongol', 'Imperio Mongol-ball', 74], ['aztec', 'Imperio Azteca-ball', 78], ['mali_empire', 'Imperio de Mali-ball', 82]
+    ['mongol', 'Imperio Mongol-ball', 74], ['aztec', 'Imperio Azteca-ball', 78], ['mali_empire', 'Imperio de Mali-ball', 82],
+    ['byzantine', 'Imperio Bizantino-ball', 90], ['ottoman', 'Imperio Otomano-ball', 94],
+    ['persian', 'Imperio Aqueménida-ball', 98], ['macedonian', 'Imperio Macedonio-ball', 102],
+    ['carthage', 'Cartago-ball', 106], ['spanish_empire', 'Imperio Español-ball', 110],
+    ['portuguese_empire', 'Imperio Portugués-ball', 114], ['french_empire', 'Imperio Francés-ball', 118],
+    ['german_empire', 'Imperio Alemán-ball', 122], ['austro_hungarian', 'Austria-Hungría-ball', 126],
+    ['japanese_empire', 'Imperio Japonés-ball', 130], ['qing', 'Imperio Qing-ball', 134],
+    ['russian_empire', 'Imperio Ruso-ball', 138], ['soviet_empire', 'URSS-ball', 142],
+    ['inca', 'Imperio Inca-ball', 146], ['maya', 'Civilización Maya-ball', 150],
+    ['brazil_empire', 'Imperio del Brasil-ball', 154], ['khmer', 'Imperio Jemer-ball', 158],
+    ['songhai', 'Imperio Songhai-ball', 162], ['ghana_empire', 'Imperio de Ghana-ball', 166],
+    ['ethiopian_empire', 'Imperio Etíope-ball', 170], ['mughal', 'Imperio Mogol-ball', 174],
+    ['delhi', 'Sultanato de Delhi-ball', 178], ['vijayanagara', 'Imperio Vijayanagara-ball', 182],
+    ['polish_lithuanian', 'Mancomunidad Polaco-Lituana-ball', 186]
   ]),
   ...tier('mythical', [
     ['eu', 'EUball', 86], ['aq', 'Antártida-ball', 90], ['atlantis', 'Atlántida-ball', 94], ['galaxy', 'Cósmico-ball', 98]

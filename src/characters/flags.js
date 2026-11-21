@@ -8,6 +8,47 @@ const urls = new Map();    // key -> url for CSS backgrounds
 const W = 512, H = 340;
 
 const CUSTOM = {
+
+  cl(g) {
+    // Chile: white upper half, red lower half, blue canton in the upper-left,
+    // with a centered white five-point star. The entire canton remains visible.
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H / 2);
+    g.fillStyle = '#d52b1e'; g.fillRect(0, H / 2, W, H / 2);
+    g.fillStyle = '#0039a6'; g.fillRect(0, 0, W / 3, H / 2);
+    g.fillStyle = '#ffffff'; g.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 17 : 40;
+      const x = W / 6 + Math.cos(a) * r, y = H / 4 + Math.sin(a) * r;
+      if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+    }
+    g.closePath(); g.fill();
+  },
+  byzantine(g) { g.fillStyle='#b51f2a'; g.fillRect(0,0,W,H); g.fillStyle='#f5d36b'; g.font='bold 190px serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('☧',W/2,H/2); },
+  ottoman(g) { g.fillStyle='#e32636'; g.fillRect(0,0,W,H); g.fillStyle='#fff'; g.beginPath(); g.arc(230,170,90,0,7); g.fill(); g.fillStyle='#e32636'; g.beginPath(); g.arc(265,145,72,0,7); g.fill(); g.fillStyle='#fff'; g.font='bold 90px serif'; g.fillText('★',350,200); },
+  persian(g) { ['#239f40','#fff','#da0000'].forEach((c,i)=>{g.fillStyle=c;g.fillRect(0,i*H/3,W,H/3)}); g.fillStyle='#da0000';g.font='bold 100px serif';g.textAlign='center';g.fillText('☼',W/2,H/2+30); },
+  macedonian(g) { g.fillStyle='#d71920';g.fillRect(0,0,W,H);g.strokeStyle='#f6c945';g.lineWidth=18;for(let i=0;i<8;i++){g.beginPath();g.moveTo(W/2,H/2);g.lineTo(W/2+260*Math.cos(i*Math.PI/4),H/2+260*Math.sin(i*Math.PI/4));g.stroke()}g.beginPath();g.arc(W/2,H/2,75,0,7);g.fillStyle='#f6c945';g.fill(); },
+  carthage(g) { g.fillStyle='#7b1520';g.fillRect(0,0,W,H);g.fillStyle='#e8c66a';g.font='bold 170px serif';g.textAlign='center';g.textBaseline='middle';g.fillText('𐤀',W/2,H/2); },
+  spanish_empire(g) { g.fillStyle='#aa151b';g.fillRect(0,0,W,H);g.fillStyle='#f1bf00';g.fillRect(0,H/4,W,H/2);g.fillStyle='#aa151b';g.font='bold 70px serif';g.textAlign='center';g.fillText('♜',W/2,H/2+22); },
+  portuguese_empire(g) { g.fillStyle='#006600';g.fillRect(0,0,W,H);g.fillStyle='#ff0000';g.fillRect(W*.38,0,W*.62,H);g.fillStyle='#f7d116';g.beginPath();g.arc(W*.4,H/2,70,0,7);g.fill(); },
+  french_empire(g) { ['#002395','#fff','#ed2939'].forEach((c,i)=>{g.fillStyle=c;g.fillRect(i*W/3,0,W/3,H)}); },
+  german_empire(g) { ['#111','#d00','#ffce00'].forEach((c,i)=>{g.fillStyle=c;g.fillRect(0,i*H/3,W,H/3)}); },
+  austro_hungarian(g) { ['#ed2939','#fff','#ed2939'].forEach((c,i)=>{g.fillStyle=c;g.fillRect(0,i*H/3,W,H/3)});g.fillStyle='#d6ad43';g.font='bold 100px serif';g.textAlign='center';g.fillText('⚜',W/2,H/2+30); },
+  japanese_empire(g) { g.fillStyle='#fff';g.fillRect(0,0,W,H);g.fillStyle='#bc002d';g.beginPath();g.arc(W/2,H/2,105,0,7);g.fill();g.fillStyle='#fff';g.font='bold 55px serif';g.textAlign='center';g.fillText('旭',W/2,H/2+18); },
+  qing(g) { g.fillStyle='#f4d03f';g.fillRect(0,0,W,H);g.fillStyle='#de2910';g.font='bold 180px serif';g.textAlign='center';g.textBaseline='middle';g.fillText('龍',W/2,H/2); },
+  russian_empire(g) { ['#fff','#2455a4','#d52b1e'].forEach((c,i)=>{g.fillStyle=c;g.fillRect(0,i*H/3,W,H/3)}); },
+  soviet_empire(g) { g.fillStyle='#cc0000';g.fillRect(0,0,W,H);g.fillStyle='#ffd700';g.font='bold 120px serif';g.textAlign='center';g.fillText('☭',W/2,H/2+30); },
+  inca(g) { ['#f7d117','#d52b1e','#f7d117'].forEach((c,i)=>{g.fillStyle=c;g.fillRect(0,i*H/3,W,H/3)});g.fillStyle='#7b3f00';g.font='bold 120px serif';g.textAlign='center';g.fillText('☀',W/2,H/2+35); },
+  maya(g) { g.fillStyle='#087f5b';g.fillRect(0,0,W,H);g.fillStyle='#f4d03f';g.font='bold 180px serif';g.textAlign='center';g.textBaseline='middle';g.fillText('꩜',W/2,H/2); },
+  brazil_empire(g) { g.fillStyle='#fff';g.fillRect(0,0,W,H);g.fillStyle='#009b3a';g.beginPath();g.moveTo(W/2,35);g.lineTo(W-35,H/2);g.lineTo(W/2,H-35);g.lineTo(35,H/2);g.closePath();g.fill();g.fillStyle='#ffdf00';g.beginPath();g.arc(W/2,H/2,75,0,7);g.fill(); },
+  khmer(g) { g.fillStyle='#032ea1';g.fillRect(0,0,W,H);g.fillStyle='#e00025';g.fillRect(0,H/4,W,H/2);g.fillStyle='#fff';g.font='bold 90px serif';g.textAlign='center';g.fillText('♜',W/2,H/2+25); },
+  songhai(g) { ['#168a45','#f5d547','#d52b1e'].forEach((c,i)=>{g.fillStyle=c;g.fillRect(0,i*H/3,W,H/3)}); },
+  ghana_empire(g) { ['#d71920','#fcd116','#168a45'].forEach((c,i)=>{g.fillStyle=c;g.fillRect(0,i*H/3,W,H/3)});g.fillStyle='#111';g.font='bold 100px serif';g.textAlign='center';g.fillText('★',W/2,H/2+30); },
+  ethiopian_empire(g) { ['#078930','#fcd116','#da121a'].forEach((c,i)=>{g.fillStyle=c;g.fillRect(0,i*H/3,W,H/3)});g.fillStyle='#fcd116';g.font='bold 95px serif';g.textAlign='center';g.fillText('✦',W/2,H/2+25); },
+  mughal(g) { g.fillStyle='#006a4e';g.fillRect(0,0,W,H);g.fillStyle='#f4d03f';g.font='bold 150px serif';g.textAlign='center';g.textBaseline='middle';g.fillText('☪',W/2,H/2); },
+  delhi(g) { g.fillStyle='#1b5e20';g.fillRect(0,0,W,H);g.fillStyle='#f4d03f';g.font='bold 150px serif';g.textAlign='center';g.textBaseline='middle';g.fillText('☾',W/2,H/2); },
+  vijayanagara(g) { ['#f7d117','#d52b1e','#f7d117'].forEach((c,i)=>{g.fillStyle=c;g.fillRect(0,i*H/3,W,H/3)});g.fillStyle='#7b3f00';g.font='bold 120px serif';g.textAlign='center';g.fillText('⚔',W/2,H/2+35); },
+  polish_lithuanian(g) { ['#fff','#d4213d'].forEach((c,i)=>{g.fillStyle=c;g.fillRect(0,i*H/2,W,H/2)});g.fillStyle='#f4d03f';g.font='bold 130px serif';g.textAlign='center';g.fillText('♞',W/2,H/2+45); }
+,
   rome(g) {
     g.fillStyle = '#9b1b1f'; g.fillRect(0, 0, W, H);
     g.fillStyle = '#f2c230'; g.font = 'bold 120px serif'; g.textAlign = 'center'; g.textBaseline = 'middle';

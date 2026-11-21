@@ -9,12 +9,13 @@ import { sfx } from '../../core/audio.js';
 import { BALLS, BALL_BY_ID } from '../../data/countryballs.js';
 import { WORLDS, WORLD_BY_ID, evoXpNeeded, rebirthLevelNeeded } from '../../data/worlds.js';
 import { EGGS, PET_BY_ID } from '../../data/pets.js';
-import { addCoins, addGems, addProfileXp, getMultipliers, grantBall, checkAchievements } from '../../core/economy.js';
+import { addCoins, addGems, addProfileXp, getMultipliers, grantBall, grantEmpire, checkAchievements } from '../../core/economy.js';
 import { hatchEgg, maxPetSlots } from '../../core/pets.js';
 import { h, ui, fmt, ballAvatar, modal, confirmBox, toast } from '../../ui/dom.js';
 import { mountJoystick } from '../../ui/joystick.js';
 import { openShop, openInventory, openCollection } from '../../ui/panels.js';
 import { buildArena, SHAPES, ARENA } from './world.js';
+import { EMPIRES } from '../../data/empires.js';
 
 const eyeG = new THREE.SphereGeometry(0.2, 8, 6), pupG = new THREE.SphereGeometry(0.1, 6, 4);
 const eyeM = new THREE.MeshBasicMaterial({ color: '#fff' }), pupM = new THREE.MeshBasicMaterial({ color: '#000' });
@@ -111,6 +112,10 @@ export default class EvolutionGame {
   #onLevelUp() {
     const lv = this.ev.level; this.hp = this.maxHp; sfx.levelUp(); this.#burst(this.player.group.position, '#ffd23a'); toast(`⬆ ¡Nivel ${lv}!`, 'good');
     let newest = null; for (const b of BALLS) if (!b.secret && b.level <= lv && !store.state.ownedBalls.includes(b.id)) { grantBall(b.id, { announce: false }); newest = b; }
+    // Evolution unlocks the same historical empire in World Conquest.
+    for (const empire of Object.values(EMPIRES)) {
+      if (empire.level <= lv && !store.state.ownedEmpires.includes(empire.id)) grantEmpire(empire.id);
+    }
     if (newest) { toast(`✨ ¡EVOLUCIONASTE! ${newest.name}`, 'epic'); store.mutate(s => { s.selectedBall = newest.id; }); this.#refreshPlayer(); this.#burst(this.player.group.position, '#ff4d8d'); }
     for (const w of WORLDS) if (unlocked(w, this.ev) && !this.ev.worldsUnlocked.includes(w.id)) { store.mutate(s => { s.evolution.worldsUnlocked.push(w.id); }); toast(`🌍 ¡Mundo nuevo: ${w.name}!`, 'epic'); }
     checkAchievements();
