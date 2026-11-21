@@ -30,19 +30,17 @@ function loadTemplate() {
  * Local +X is the model's front, local +Z ends up screen-left, so u runs along -Z.
  */
 function applySphericalFlagUVs(geo, frontAxis = 'x') {
-  // Equirectangular UVs: the centre of the flag faces forward and the flag wraps
-  // continuously around the whole sphere. This avoids the old planar projection
-  // collapsing most of the flag into a tiny patch on some GLB meshes.
+  // Planar front projection, 3:2 flag: the whole flag is visible from the front.
   const p = geo.attributes.position;
   const uv = new Float32Array(p.count * 2);
   const v = new THREE.Vector3();
+  const a = 0.8;        // half visible width (in radii)
+  const b = a / 1.5;    // half visible height (3:2)
   for (let i = 0; i < p.count; i++) {
     v.fromBufferAttribute(p, i).normalize();
-    const longitude = frontAxis === 'z'
-      ? Math.atan2(v.x, v.z)
-      : Math.atan2(v.z, v.x);
-    uv[i * 2] = 0.5 + longitude / (Math.PI * 2);
-    uv[i * 2 + 1] = 0.5 + Math.asin(THREE.MathUtils.clamp(v.y, -1, 1)) / Math.PI;
+    const side = frontAxis === 'z' ? v.x : -v.z;
+    uv[i * 2] = 0.5 + side / (2 * a);
+    uv[i * 2 + 1] = 0.5 + v.y / (2 * b);
   }
   geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
 }
@@ -55,7 +53,7 @@ function applySphericalFlagUVs(geo, frontAxis = 'x') {
 export async function getFlagTexture(key) {
   if (textures.has(key)) return textures.get(key);
   const img = await loadFlag(key);
-  const W = 1024, H = 512;
+  const W = 768, H = 512;
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d', { alpha: false });
   g.imageSmoothingEnabled = true;
@@ -69,7 +67,7 @@ export async function getFlagTexture(key) {
 
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = THREE.RepeatWrapping;
+  t.wrapS = THREE.ClampToEdgeWrapping;
   t.wrapT = THREE.ClampToEdgeWrapping;
   t.anisotropy = 8;
   t.generateMipmaps = true;
