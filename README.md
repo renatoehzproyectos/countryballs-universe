@@ -104,3 +104,11 @@ Se reemplazó el esquema anterior de IDs largos por el patrón de salas que util
 - Hasta 8 visitantes por anfitrión.
 
 La presencia y sincronización de avatares continúa limitada al hub y al modo Evolución, tal como en la versión anterior.
+
+
+## Corrección de Countryballs (texturas de banderas)
+
+- Se unificó la proyección de banderas mediante UV esféricas equirectangulares.
+- El personaje principal (`Countryball`) y las esferas ligeras (`LiteBall`) ahora centran la bandera hacia el frente y la envuelven alrededor de toda la esfera.
+- Se aplica al hub, NPC, mascotas, evoluciones y jugadores remotos.
+- Se conservan las banderas SVG existentes y las banderas históricas/procedurales.

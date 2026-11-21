@@ -29,59 +29,52 @@ function loadTemplate() {
  * figurine), instead of wrapping it around the sphere where only a stretched sliver shows.
  * Local +X is the model's front, local +Z ends up screen-left, so u runs along -Z.
  */
-function applyFrontUVs(geo) {
-  geo.computeBoundingBox();
-  const bb = geo.boundingBox, c = bb.getCenter(new THREE.Vector3());
-  const R = Math.max(bb.max.z - bb.min.z, bb.max.y - bb.min.y) / 2 || 1;
-  const p = geo.attributes.position, uv = new Float32Array(p.count * 2);
+function applySphericalFlagUVs(geo, frontAxis = 'x') {
+  // Equirectangular UVs: the centre of the flag faces forward and the flag wraps
+  // continuously around the whole sphere. This avoids the old planar projection
+  // collapsing most of the flag into a tiny patch on some GLB meshes.
+  const p = geo.attributes.position;
+  const uv = new Float32Array(p.count * 2);
+  const v = new THREE.Vector3();
   for (let i = 0; i < p.count; i++) {
-    uv[i * 2] = 0.5 - (p.getZ(i) - c.z) / (2 * R);
-    uv[i * 2 + 1] = 0.5 + (p.getY(i) - c.y) / (2 * R);
+    v.fromBufferAttribute(p, i).normalize();
+    const longitude = frontAxis === 'z'
+      ? Math.atan2(v.x, v.z)
+      : Math.atan2(v.z, v.x);
+    uv[i * 2] = 0.5 + longitude / (Math.PI * 2);
+    uv[i * 2 + 1] = 0.5 + Math.asin(THREE.MathUtils.clamp(v.y, -1, 1)) / Math.PI;
   }
   geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
 }
 
 /**
- * Builds a square front-projection texture without stretching or cropping the source flag.
- * The source flag keeps its real aspect ratio. The narrow areas left over are filled by
- * extending the flag's outermost pixel rows/columns (edge bleed), so the sphere stays covered
- * while stars, coats of arms, crosses and canton geometry keep their intended proportions.
+ * Creates a 2:1 equirectangular flag texture for spherical UVs. All source flags
+ * (SVG and procedural canvas flags) go through this same path, so the main ball,
+ * NPCs, evolution balls and remote players render consistently.
  */
 export async function getFlagTexture(key) {
   if (textures.has(key)) return textures.get(key);
   const img = await loadFlag(key);
-  const S = 1024, c = document.createElement('canvas'); c.width = c.height = S;
+  const W = 1024, H = 512;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d', { alpha: false });
-  const sw = img.naturalWidth || img.width || 3;
-  const sh = img.naturalHeight || img.height || 2;
-  const ratio = Math.max(0.5, Math.min(2.6, sw / sh));
   g.imageSmoothingEnabled = true;
   g.imageSmoothingQuality = 'high';
-  g.fillStyle = '#ffffff'; g.fillRect(0, 0, S, S);
-
-  if (ratio >= 1) {
-    const drawH = S / ratio;
-    const y = (S - drawH) / 2;
-    // Extend top and bottom edge pixels instead of distorting the flag's proportions.
-    if (y > 0) {
-      g.drawImage(img, 0, 0, sw, 1, 0, 0, S, y);
-      g.drawImage(img, 0, sh - 1, sw, 1, 0, y + drawH, S, y);
-    }
-    g.drawImage(img, 0, 0, sw, sh, 0, y, S, drawH);
-  } else {
-    const drawW = S * ratio;
-    const x = (S - drawW) / 2;
-    // Tall flags (for example Nepal) keep their full silhouette; bleed left/right edges.
-    if (x > 0) {
-      g.drawImage(img, 0, 0, 1, sh, 0, 0, x, S);
-      g.drawImage(img, sw - 1, 0, 1, sh, x + drawW, 0, x, S);
-    }
-    g.drawImage(img, 0, 0, sw, sh, x, 0, drawW, S);
-  }
+  g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H);
+  const sw = img.naturalWidth || img.width || 3;
+  const sh = img.naturalHeight || img.height || 2;
+  // A flag covers the full sphere. A small aspect adaptation is preferable to
+  // cropping important details such as stars, suns, crosses or coats of arms.
+  g.drawImage(img, 0, 0, sw, sh, 0, 0, W, H);
 
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = THREE.RepeatWrapping;
+  t.wrapT = THREE.ClampToEdgeWrapping;
   t.anisotropy = 8;
+  t.generateMipmaps = true;
+  t.minFilter = THREE.LinearMipmapLinearFilter;
+  t.magFilter = THREE.LinearFilter;
   t.needsUpdate = true;
   textures.set(key, t);
   return t;
@@ -111,7 +104,7 @@ export class Countryball {
       if (happy.has(o.name)) { this.happyEyes.push(o); o.visible = false; }
       if (o.name === 'ball_0') {
         const body = o.children[0];
-        body.geometry = body.geometry.clone(); applyFrontUVs(body.geometry);
+        body.geometry = body.geometry.clone(); applySphericalFlagUVs(body.geometry, 'x');
         this.body = body;
         // Preserve exact flag colors: lighting and the decorative normal map washed out pale stripes and emblems on mobile.
         this.bodyMat = new THREE.MeshBasicMaterial({ map: tex, color: 0xffffff, side: THREE.DoubleSide, toneMapped: false });

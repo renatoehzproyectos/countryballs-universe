@@ -5,11 +5,14 @@ import { getFlagTexture } from './countryball.js';
  * Lightweight procedural countryball (≈300 triangles) for pets, NPCs and crowds,
  * so we can show dozens on mobile. Same public API as the full Countryball.
  */
-const body = new THREE.SphereGeometry(1, 20, 14);
+const body = new THREE.SphereGeometry(1, 32, 24);
 const uv = new Float32Array(body.attributes.position.count * 2);
-for (let i = 0; i < uv.length / 2; i++) {
-  const p = body.attributes.position, x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-  uv[i * 2] = 0.5 + x / 2; uv[i * 2 + 1] = 0.5 + y / 2; // front-facing planar mapping (+Z front)
+const point = new THREE.Vector3();
+for (let i = 0; i < body.attributes.position.count; i++) {
+  point.fromBufferAttribute(body.attributes.position, i).normalize();
+  // LiteBall faces +Z. Keep the flag centred on the visible front hemisphere.
+  uv[i * 2] = 0.5 + Math.atan2(point.x, point.z) / (Math.PI * 2);
+  uv[i * 2 + 1] = 0.5 + Math.asin(THREE.MathUtils.clamp(point.y, -1, 1)) / Math.PI;
 }
 body.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
 const eyeG = new THREE.SphereGeometry(0.2, 10, 8), pupG = new THREE.SphereGeometry(0.1, 8, 6);
@@ -20,7 +23,10 @@ export class LiteBall {
     this.group = new THREE.Group(); this.pivot = new THREE.Group(); this.group.add(this.pivot);
     this.group.scale.setScalar(size); this.radius = 1;
     // Unlit material preserves every flag's original colors on mobile screens.
-    this.mat = new THREE.MeshBasicMaterial({ color: tint ?? '#ffffff', side: THREE.DoubleSide, toneMapped: false });
+    this.mat = new THREE.MeshBasicMaterial({
+      color: tint ?? '#ffffff', side: THREE.DoubleSide, toneMapped: false,
+      map: null
+    });
     this.pivot.add(new THREE.Mesh(body, this.mat));
     for (const sx of [-1, 1]) {
       const e = new THREE.Mesh(eyeG, eyeM); e.position.set(sx * 0.32, 0.18, 0.88); e.scale.set(1, 1.35, 0.5);
