@@ -44,3 +44,17 @@ countryballs-universe/
 ```
 
 El progreso se guarda en el propio navegador, así que no hace falta ninguna cuenta ni servidor.
+
+## 🗺️ Conquista Mundial (tiempo real)
+
+Rehecha siguiendo el análisis de *Take Over The World!*:
+
+- **Tiempo continuo** con ⏸ / 1× / 2× / 4× y calendario (empieza en 1945). No hay botón «siguiente mes».
+- **Mapa político**: elige país (nombre, bandera, territorio → confirmar). Cada zona tiene propietario y color; las fronteras se actualizan.
+- **Expansión** hacia tierras sin dueño (por frontera o por puerto) y **conquista militar** por separado.
+- **Economía**: ciudades (dinero y gente), fábricas (industria e investigación), puertos, bases militares y bases espaciales.
+- **Guerra**: tropas marchando por el mapa, invasiones marítimas con barcos, misiles, bombas y bomba atómica.
+- **Diplomacia**: ALIANZA (relaciones, cooperación, comercio, alianza, protección) y GUERRA; paz con condiciones (territorios, reparaciones, estado títere).
+- **Imperios históricos** que renacen al controlar el 70 % de su territorio, **superpoderes** (EE. UU., China, Rusia, Reino Unido) y **carrera espacial** de 7 fases hasta plantar la bandera en la Luna.
+- **Bots** en todos los demás países (expanden, construyen, investigan, pactan, atacan, piden paz y compiten por la Luna).
+- Victoria: dominar el 60 % del mundo (con títeres) o plantar la bandera en la Luna.

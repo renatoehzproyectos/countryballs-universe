@@ -9,7 +9,7 @@ const body = new THREE.SphereGeometry(1, 20, 14);
 const uv = new Float32Array(body.attributes.position.count * 2);
 for (let i = 0; i < uv.length / 2; i++) {
   const p = body.attributes.position, x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-  uv[i * 2] = 0.5 + Math.atan2(x, z) / (Math.PI * 2); uv[i * 2 + 1] = 0.5 + Math.asin(y) / Math.PI;
+  uv[i * 2] = 0.5 + x / 2; uv[i * 2 + 1] = 0.5 + y / 2; // front-facing planar mapping (+Z front)
 }
 body.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
 const eyeG = new THREE.SphereGeometry(0.2, 10, 8), pupG = new THREE.SphereGeometry(0.1, 8, 6);

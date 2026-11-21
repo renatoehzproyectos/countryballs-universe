@@ -189,7 +189,7 @@ export class Hub {
       h('span', { style: { fontSize: '40px' } }, emoji), h('div.grow', h('div', { style: { fontSize: '18px', fontWeight: 800 } }, title), h('div', { style: { fontWeight: 500, fontSize: '13px', opacity: 0.9 } }, desc), h('div', { style: { fontSize: '12px', marginTop: '3px' } }, stat)));
     const m = modal('🎮 ¡Elige un juego!', [
       card('evolution', '🌍', 'Evolución', 'Explora mundos, vence jefes, colecciona mascotas y evoluciona.', `Nivel ${e.level} · ${e.rebirths} renaceres`, 'linear-gradient(90deg,#1f8a4c,#2fb36a)'),
-      card('conquest', '🗺️', 'Conquista Mundial', 'Haz amigos, comercia y conquista el mapa del mundo.', `Imperios ${s.ownedEmpires.length}/5`, 'linear-gradient(90deg,#9a2a2a,#d24a4a)'),
+      card('conquest', '🗺️', 'Conquista Mundial', 'Estrategia en tiempo real: expande, pacta, guerrea y llega a la Luna.', `Imperios ${s.ownedEmpires.length}/5`, 'linear-gradient(90deg,#9a2a2a,#d24a4a)'),
       card('flagquiz', '🚩', 'Adivina la bandera', '¡Gana imperios acertando banderas!', `Mejor racha ${s.stats.bestStreak} · ${s.stats.flagsCorrect} aciertos`, 'linear-gradient(90deg,#2a5fc9,#4a8cff)')]);
   }
 

@@ -24,28 +24,38 @@ function loadTemplate() {
   return templatePromise;
 }
 
-/** Equirectangular UVs; the flag spans 270° around the front (+X) and the full height. */
+/**
+ * Front-facing planar UVs: what the player sees from the front IS the flag (like the reference
+ * figurine), instead of wrapping it around the sphere where only a stretched sliver shows.
+ * Local +X is the model's front, local +Z ends up screen-left, so u runs along -Z.
+ */
 function applyFrontUVs(geo) {
+  geo.computeBoundingBox();
+  const bb = geo.boundingBox, c = bb.getCenter(new THREE.Vector3());
+  const R = Math.max(bb.max.z - bb.min.z, bb.max.y - bb.min.y) / 2 || 1;
   const p = geo.attributes.position, uv = new Float32Array(p.count * 2);
   for (let i = 0; i < p.count; i++) {
-    const x = p.getX(i), y = p.getY(i), z = p.getZ(i), r = Math.hypot(x, y, z) || 1;
-    uv[i * 2] = 0.5 - Math.atan2(z, x) / (Math.PI * 2); // local +Z ends up screen-left after the wrapper rotation
-    uv[i * 2 + 1] = 0.5 + Math.asin(Math.max(-1, Math.min(1, y / r))) / Math.PI;
+    uv[i * 2] = 0.5 - (p.getZ(i) - c.z) / (2 * R);
+    uv[i * 2 + 1] = 0.5 + (p.getY(i) - c.y) / (2 * R);
   }
   geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
 }
 
-/** Flag texture: the flag wraps 270° around the front (75% of the surface); edge pixels fill the back. */
+/**
+ * Flag texture (square, mapped to the ball's front disc). The central part of the flag is shown
+ * at roughly its natural proportions (so e.g. Chile shows canton + star, white and red bands);
+ * very wide flags are squeezed a little so they are not cropped to a tiny slice.
+ */
 export async function getFlagTexture(key) {
   if (textures.has(key)) return textures.get(key);
   const img = await loadFlag(key);
-  const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
-  const g = c.getContext('2d'), sw = img.naturalWidth || img.width, sh = img.naturalHeight || img.height;
-  const x0 = 1024 * 0.125, x1 = 1024 * 0.875; // 75% of the ball's surface
-  g.drawImage(img, 0, 0, 1, sh, 0, 0, x0, 512);
-  g.drawImage(img, sw - 1, 0, 1, sh, x1, 0, 1024 - x1, 512);
-  g.drawImage(img, 0, 0, sw, sh, x0, 0, x1 - x0, 512);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  const S = 1024, c = document.createElement('canvas'); c.width = c.height = S;
+  const g = c.getContext('2d');
+  const sw = img.naturalWidth || img.width || 3, sh = img.naturalHeight || img.height || 2;
+  const aspect = sw / sh, f = Math.min(1, Math.max(1 / aspect, 0.62));
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(img, (sw * (1 - f)) / 2, 0, sw * f, sh, 0, 0, S, S);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
   textures.set(key, t); return t;
 }
 
