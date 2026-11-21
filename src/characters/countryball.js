@@ -42,22 +42,49 @@ function applyFrontUVs(geo) {
 }
 
 /**
- * Flag texture (square, mapped to the ball's front disc). The central part of the flag is shown
- * at roughly its natural proportions (so e.g. Chile shows canton + star, white and red bands);
- * very wide flags are squeezed a little so they are not cropped to a tiny slice.
+ * Builds a square front-projection texture without stretching or cropping the source flag.
+ * The source flag keeps its real aspect ratio. The narrow areas left over are filled by
+ * extending the flag's outermost pixel rows/columns (edge bleed), so the sphere stays covered
+ * while stars, coats of arms, crosses and canton geometry keep their intended proportions.
  */
 export async function getFlagTexture(key) {
   if (textures.has(key)) return textures.get(key);
   const img = await loadFlag(key);
   const S = 1024, c = document.createElement('canvas'); c.width = c.height = S;
-  const g = c.getContext('2d');
-  const sw = img.naturalWidth || img.width || 3, sh = img.naturalHeight || img.height || 2;
-  // Fit the COMPLETE flag to the visible Countryball face. Never center-crop:
-  // the Chilean star/canton and other corner emblems must remain visible.
+  const g = c.getContext('2d', { alpha: false });
+  const sw = img.naturalWidth || img.width || 3;
+  const sh = img.naturalHeight || img.height || 2;
+  const ratio = Math.max(0.5, Math.min(2.6, sw / sh));
+  g.imageSmoothingEnabled = true;
   g.imageSmoothingQuality = 'high';
-  g.drawImage(img, 0, 0, sw, sh, 0, 0, S, S);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
-  textures.set(key, t); return t;
+  g.fillStyle = '#ffffff'; g.fillRect(0, 0, S, S);
+
+  if (ratio >= 1) {
+    const drawH = S / ratio;
+    const y = (S - drawH) / 2;
+    // Extend top and bottom edge pixels instead of distorting the flag's proportions.
+    if (y > 0) {
+      g.drawImage(img, 0, 0, sw, 1, 0, 0, S, y);
+      g.drawImage(img, 0, sh - 1, sw, 1, 0, y + drawH, S, y);
+    }
+    g.drawImage(img, 0, 0, sw, sh, 0, y, S, drawH);
+  } else {
+    const drawW = S * ratio;
+    const x = (S - drawW) / 2;
+    // Tall flags (for example Nepal) keep their full silhouette; bleed left/right edges.
+    if (x > 0) {
+      g.drawImage(img, 0, 0, 1, sh, 0, 0, x, S);
+      g.drawImage(img, sw - 1, 0, 1, sh, x + drawW, 0, x, S);
+    }
+    g.drawImage(img, 0, 0, sw, sh, x, 0, drawW, S);
+  }
+
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  t.needsUpdate = true;
+  textures.set(key, t);
+  return t;
 }
 
 export class Countryball {

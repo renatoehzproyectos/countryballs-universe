@@ -65,3 +65,8 @@ Rehecha siguiendo el análisis de *Take Over The World!*:
 - Se conserva la bandera completa en la textura frontal de los Countryballs; ya no se recortan cantones ni estrellas. Chile tiene una bandera dibujada explícitamente con su estrella blanca.
 - Se añadieron 29 imperios y estados históricos para Conquista Mundial.
 - Cada imperio tiene su Countryball y se desbloquea en Countryballs Evolution al alcanzar el nivel indicado; al desbloquearlo queda disponible como nación inicial en Conquista Mundial.
+
+
+## Corrección global de banderas en Countryballs
+
+Todas las banderas ahora conservan la proporción de su archivo original al proyectarse sobre la cara frontal de la esfera. Se elimina el estiramiento cuadrado que deformaba cruces, estrellas, franjas, escudos y cantones. Los espacios de adaptación se rellenan extendiendo los píxeles del borde de la propia bandera, evitando recortes y evitando dejar zonas transparentes. Se aplica automáticamente a banderas ISO, banderas históricas personalizadas y Countryballs desbloqueables.
