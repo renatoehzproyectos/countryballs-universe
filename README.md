@@ -112,3 +112,9 @@ La presencia y sincronización de avatares continúa limitada al hub y al modo E
 - El personaje principal (`Countryball`) y las esferas ligeras (`LiteBall`) ahora centran la bandera hacia el frente y la envuelven alrededor de toda la esfera.
 - Se aplica al hub, NPC, mascotas, evoluciones y jugadores remotos.
 - Se conservan las banderas SVG existentes y las banderas históricas/procedurales.
+
+## Conquista multijugador
+1. El anfitrión crea una sala en 🌐 Multijugador (hub o menú ☰ de Conquista) y empieza/continúa una partida.
+2. Los invitados se unen con el código de 4 dígitos; al empezar Conquista les aparece "¿Te unes?".
+3. Cada invitado elige un país libre (sustituye a su IA). Si lo eliminan, puede elegir otro; si se desconecta, vuelve a la IA.
+4. El anfitrión simula todo (`sim.js`); los invitados reciben deltas (`netsync.js`) y mandan órdenes (`cq:cmd`). Las propuestas entre jugadores van al buzón 🔔 del otro jugador.

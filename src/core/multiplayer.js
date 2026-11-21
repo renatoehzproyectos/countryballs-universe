@@ -69,6 +69,7 @@ class Multiplayer {
     this.status = 'offline';
     this.lastState = null;
     this.hostReady = false;
+    this.chunks = new Map();
   }
 
   on(type, fn) {
@@ -242,6 +243,13 @@ class Multiplayer {
 
     conn.on('data', message => {
       if (!message || typeof message !== 'object') return;
+      if (message.type === 'cq') { this.#deliver(conn.peer, message.body); return; }
+      if (message.type === 'cq-chunk') {
+        const k = conn.peer + message.id, c = this.chunks.get(k) ?? { n: message.n, parts: [], got: 0 };
+        c.parts[message.i] = message.data; c.got++; this.chunks.set(k, c);
+        if (c.got >= c.n) { this.chunks.delete(k); this.#deliver(conn.peer, c.parts.join('')); }
+        return;
+      }
       if (message.type === 'player-state' && message.player) {
         const player = { ...message.player, id: conn.peer };
         this.players.set(conn.peer, player);
@@ -277,6 +285,22 @@ class Multiplayer {
       if (this.lastState) conn.send({ type: 'player-state', player: this.lastState });
     }
     this.emit('peer-joined', { id: conn.peer });
+  }
+
+  #deliver(from, body) { try { this.emit('message', { from, msg: JSON.parse(body) }); } catch (e) { console.warn('[multiplayer] bad message', e); } }
+
+  /** Generic game message. Host: to one peer (id) or everybody. Guest: always to the host. Large payloads are chunked. */
+  send(obj, to = null) {
+    if (!this.peer || !this.code) return;
+    const str = JSON.stringify(obj), CH = 12000;
+    const conns = this.role === 'host' && to ? [this.connections.get(to)] : [...this.connections.values()];
+    for (const c of conns) {
+      if (!c?.open) continue;
+      try {
+        if (str.length <= CH) c.send({ type: 'cq', body: str });
+        else { const id = Math.random().toString(36).slice(2), n = Math.ceil(str.length / CH); for (let i = 0; i < n; i++) c.send({ type: 'cq-chunk', id, i, n, data: str.slice(i * CH, (i + 1) * CH) }); }
+      } catch (e) { console.warn('[multiplayer] send failed', e); }
+    }
   }
 
   sendState(scene, position, rotation = 0) {

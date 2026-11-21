@@ -51,9 +51,9 @@ function think(s, n) {
   // peace
   for (const eId of enemies) {
     const E = s.nations[eId]; if (!E?.alive) continue; const d = S.desperation(s, n.id, eId);
-    if (E.id === s.player) {
-      if (d > 28 && rnd() < 0.25) S.addProposal(s, { from: n.id, kind: 'peace', deal: d > 55 ? 'concede' : 'white' });
-      else if (S.desperation(s, s.player, n.id) > 40 && rnd() < 0.2) S.addProposal(s, { from: n.id, kind: 'peace', deal: rnd() < 0.5 ? 'reparations' : 'cede1', demand: true });
+    if (S.isHuman(s, E.id)) {
+      if (d > 28 && rnd() < 0.25) S.addProposal(s, { from: n.id, to: E.id, kind: 'peace', deal: d > 55 ? 'concede' : 'white' });
+      else if (S.desperation(s, E.id, n.id) > 40 && rnd() < 0.2) S.addProposal(s, { from: n.id, to: E.id, kind: 'peace', deal: rnd() < 0.5 ? 'reparations' : 'cede1', demand: true });
     } else if (d > 30 && rnd() < 0.3 && S.peaceDecision(s, n.id, eId, 'white').ok) S.applyPeace(s, n.id, eId, 'white');
   }
 
@@ -81,20 +81,20 @@ function think(s, n) {
       const O = s.nations[o], r = S.rel(s, n.id, o);
       if (r > -10) {
         const type = !S.pactOf(s, n.id, o, 'embassy') ? 'embassy' : (!S.pactOf(s, n.id, o, 'trade') && P.trade > 0.3) ? 'trade' : (!S.pactOf(s, n.id, o, 'coop') && P.coop > 0.4) ? 'coop' : (!S.pactOf(s, n.id, o, 'alliance') && r > 25 && P.coop > 0.25) ? 'alliance' : null;
-        if (type) { if (o === s.player) S.addProposal(s, { from: n.id, kind: type }); else if (S.evaluate(s, n.id, o, type).ok) S.sign(s, n.id, o, type); }
+        if (type) { if (S.isHuman(s, o)) S.addProposal(s, { from: n.id, to: o, kind: type }); else if (S.evaluate(s, n.id, o, type).ok) S.sign(s, n.id, o, type); }
       }
     }
   }
 
   // war: pick a weaker neighbour (or sea target)
   if (!n.overlord && enemies.length < 2 && s.t > 150 && s.wars.length < 4 + S.alive(s).length / 18 && rnd() < (0.002 + P.aggr * 0.009) / (1 + n.regs.length / 3)) {
-    const cands = S.neighbours(s, n.id).map(id => s.nations[id]).filter(o => o.alive && S.canDeclare(s, n.id, o.id).ok && S.strength(n) > S.strength(o) * (2.6 - P.aggr * 0.7) && (o.id !== s.player || s.t > 540));
+    const cands = S.neighbours(s, n.id).map(id => s.nations[id]).filter(o => o.alive && S.canDeclare(s, n.id, o.id).ok && S.strength(n) > S.strength(o) * (2.6 - P.aggr * 0.7) && (!S.isHuman(s, o.id) || s.t > 540));
     const t = cands.sort((a, b) => (S.rel(s, n.id, a.id)) - S.rel(s, n.id, b.id))[0];
     if (t && S.rel(s, n.id, t.id) < 15 + P.aggr * 20) S.declareWar(s, n.id, t.id);
   }
   // puppets: strong nations protect weak ones; annex old puppets
-  if (!n.overlord && P.aggr > 0.5 && rnd() < 0.01) { const w = S.neighbours(s, n.id).map(id => s.nations[id]).find(o => !o.overlord && o.id !== s.player && S.strength(n) > S.strength(o) * 4 && !S.atWar(s, n.id, o.id)); if (w) S.offerPuppet(s, n.id, w.id); }
-  for (const v of S.puppetsOf(s, n.id)) if (s.t - v.since > 400 && rnd() < 0.05 && v.id !== s.player) S.annex(s, n.id, v.id);
+  if (!n.overlord && P.aggr > 0.5 && rnd() < 0.01) { const w = S.neighbours(s, n.id).map(id => s.nations[id]).find(o => !o.overlord && !S.isHuman(s, o.id) && S.strength(n) > S.strength(o) * 4 && !S.atWar(s, n.id, o.id)); if (w) S.offerPuppet(s, n.id, w.id); }
+  for (const v of S.puppetsOf(s, n.id)) if (s.t - v.since > 400 && rnd() < 0.05 && !S.isHuman(s, v.id)) S.annex(s, n.id, v.id);
 }
 S.setAI(think);
 export default think;

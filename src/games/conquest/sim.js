@@ -37,9 +37,20 @@ export const setAI = f => { hooks.ai = f; };
 const dirty = new Set(); let relDirty = false;
 export const drainDirty = () => { const a = [...dirty]; dirty.clear(); return a; };
 export const drainRel = () => { const r = relDirty; relDirty = false; return r; };
+export const markDirty = ids => ids.forEach(i => dirty.add(i));
+export const markRel = () => { relDirty = true; };
+// ---- multiplayer helpers: s.humans lists every nation controlled by a person (default: just s.player)
+export const isHuman = (s, id) => (s.humans ?? [s.player]).includes(id);
+export const humansAlive = s => (s.humans ?? [s.player]).some(h => s.nations[h]?.alive);
+export function claimSeat(s, id, pname = '') {
+  const n = s.nations[id]; if (!n?.alive || !n.bot || isHuman(s, id)) return { ok: false, msg: 'Ese país ya no está libre.' };
+  s.humans = (s.humans ?? [s.player]).filter(h => s.nations[h]?.alive); n.bot = false; n.pname = pname; s.humans.push(id); relDirty = true; return { ok: true };
+}
+export function releaseSeat(s, id) { const n = s.nations[id]; if (!n) return; n.bot = true; n.pname = ''; s.humans = (s.humans ?? []).filter(h => h !== id); }
+export function normalizeSolo(s) { s.humans = [s.player]; for (const n of Object.values(s.nations)) { n.bot = n.id !== s.player; n.pname = ''; } }
 export const markAll = () => { IDS.forEach(i => dirty.add(i)); relDirty = true; };
-export function log(s, text, tone = '', who = []) {
-  s.log.unshift({ t: s.t, text, tone }); if (s.log.length > 70) s.log.length = 70; hooks.event?.({ text, tone, who });
+export function log(s, text, tone = '', who = [], fx = null) {
+  s.log.unshift({ t: s.t, text, tone }); if (s.log.length > 70) s.log.length = 70; hooks.event?.({ text, tone, who, fx });
 }
 const rnd = () => Math.random();
 
@@ -71,7 +82,7 @@ function makeRegion(id) {
 const BASE = (a, b) => Math.round((hash(a < b ? a + b : b + a) - 0.5) * 30) - (LAND[a]?.has(b) ? 5 : 0);
 
 export function newGame(startId) {
-  const s = { v: 2, t: 0, acc: 0, player: startId, regions: {}, nations: {}, wars: [], pacts: [], orders: [], strikes: [], inbox: [], log: [], space: {}, over: null, nid: 1 };
+  const s = { v: 2, t: 0, acc: 0, player: startId, humans: [startId], regions: {}, nations: {}, wars: [], pacts: [], orders: [], strikes: [], inbox: [], log: [], space: {}, over: null, nid: 1 };
   for (const id of IDS) s.regions[id] = makeRegion(id);
   for (const id of IDS) {
     const reg = s.regions[id]; if (!reg.owner) continue;
@@ -164,8 +175,8 @@ function kill(s, id, by) {
   const n = s.nations[id]; n.alive = false; s.wars = s.wars.filter(w => w.a !== id && w.b !== id); s.pacts = s.pacts.filter(p => p.a !== id && p.b !== id);
   s.orders = s.orders.filter(o => o.o !== id); s.strikes = s.strikes.filter(o => o.o !== id); s.inbox = s.inbox.filter(p => p.from !== id);
   for (const v of alive(s)) if (v.overlord === id) v.overlord = null;
-  log(s, `${n.name} desapareció del mapa (lo tomó ${s.nations[by]?.name ?? 'alguien'}).`, id === s.player ? 'bad' : '', [id, by]);
-  if (id === s.player && !s.over) s.over = { type: 'lose', why: 'eliminado' };
+  log(s, `${n.name} desapareció del mapa (lo tomó ${s.nations[by]?.name ?? 'alguien'}).`, id === s.player ? 'bad' : '', [id, by], { k: 'dead', icon: '☠️', a: id, b: by, at: n.cap });
+  if (isHuman(s, id) && !s.over && !humansAlive(s)) s.over = { type: 'lose', why: 'eliminado' };
 }
 
 // ---------------- building / recruiting / research ----------------
@@ -228,10 +239,10 @@ function impact(s, st) {
     g.dmg = Math.min(100, g.dmg + 20 * p); g.pop *= 1 - 0.012 * p; dirty.add(rid);
     if (D) { const loss = Math.min(D.troops, D.troops * 0.04 * p + 1.5 * p); D.troops -= loss; }
     for (const b of ['space', 'base', 'port', 'fact', 'city']) { const floor = b === 'city' ? 1 : 0; if (g[b] > floor && rnd() < Math.min(0.9, 0.14 * p)) g[b]--; }
-    if (D && !D.bot) hooks.event?.({ text: `💥 ¡${d.name} de ${A.name} cayó sobre ${NAME(rid)}!`, tone: 'bad', who: [D.id] });
+    hooks.event?.({ text: '', tone: '', who: [], fx: { k: 'blast', at: rid, icon: d.icon, a: st.o, b: D?.id ?? null } });
   }
   hooks.sfx?.('boom'); if (d.power >= 6) { A.rep = Math.max(0, A.rep - 25); for (const o of alive(s)) if (o.id !== A.id) addRel(s, o.id, A.id, -20); }
-  log(s, `${d.icon} ${A.name} atacó ${NAME(st.to)} con ${d.name.toLowerCase()}.`, st.o === s.player ? 'good' : s.regions[st.to].owner === s.player ? 'bad' : '', [st.o, s.regions[st.to].owner]);
+  log(s, `${d.icon} ${A.name} atacó ${NAME(st.to)} con ${d.name.toLowerCase()}.`, st.o === s.player ? 'good' : s.regions[st.to].owner === s.player ? 'bad' : '', [st.o, s.regions[st.to].owner], { k: 'bomb', icon: d.icon, a: st.o, b: s.regions[st.to].owner, at: st.to });
 }
 
 // ---------------- superpowers ----------------
@@ -239,13 +250,13 @@ export const spDef = n => n.spId ? SUPERPOWERS[n.spId] : null;
 export function unlockSP(s, nid) {
   const n = s.nations[nid], d = spDef(n); if (!d || n.sp) return { ok: false, msg: 'No disponible.' };
   if (!hasTech(n, d.tech)) return { ok: false, msg: `Investiga ${TECHS[d.tech].name}.` }; if (n.money < d.cost) return { ok: false, msg: `Cuesta ${d.cost}🪙.` };
-  n.money -= d.cost; n.sp = { on: true, cd: 0, act: 0 }; log(s, `${d.icon} ¡${n.name} desbloquea su superpoder: ${d.name}!`, 'epic', [nid]); return { ok: true, msg: 'Superpoder desbloqueado.' };
+  n.money -= d.cost; n.sp = { on: true, cd: 0, act: 0 }; log(s, `${d.icon} ¡${n.name} desbloquea su superpoder: ${d.name}!`, 'epic', [nid], { k: 'sp', icon: d.icon, a: nid, at: n.cap }); return { ok: true, msg: 'Superpoder desbloqueado.' };
 }
 export function useSP(s, nid) {
   const n = s.nations[nid], d = spDef(n); if (!n.sp?.on) return { ok: false, msg: 'Aún no lo tienes.' }; if (n.sp.cd > 0) return { ok: false, msg: `Espera ${n.sp.cd} días.` };
   const a = d.act; n.sp.cd = a.cd;
   if (n.spId === 'US') { n.money += 600; n.ind += 120; n.troops += 30; } else if (n.spId === 'CN') n.sp.act = a.days; else if (n.spId === 'RU') n.troops += 40; else if (n.spId === 'GB') n.ships += 8;
-  log(s, `${d.icon} ${n.name}: ${a.name}.`, 'epic', [nid]); return { ok: true, msg: a.name + '.' };
+  log(s, `${d.icon} ${n.name}: ${a.name}.`, 'epic', [nid], { k: 'sp', icon: d.icon, a: nid, at: n.cap }); return { ok: true, msg: a.name + '.' };
 }
 
 // ---------------- space race ----------------
@@ -267,7 +278,7 @@ function spaceTick(s) {
     if (sp.i === 4 && sp.left === null) sp.left = Math.round(SPACE[4].days * (n.bot ? 1.8 : 1));
     if (sp.left !== null && --sp.left <= 0) {
       sp.i++; sp.left = null; const done = SPACE[sp.i - 1];
-      log(s, `${done.icon} ${n.name} completó: ${done.name.toLowerCase()}.`, n.id === s.player ? 'epic' : '', [n.id]);
+      log(s, `${done.icon} ${n.name} completó: ${done.name.toLowerCase()}.`, n.id === s.player ? 'epic' : '', [n.id], { k: 'tech', icon: done.icon, a: n.id });
       if (sp.i >= SPACE.length) { s.over = { type: n.id === s.player ? 'win' : 'lose', why: 'luna', winner: n.id }; }
     }
   }
@@ -282,7 +293,7 @@ function empireTick(s) {
   for (const n of alive(s)) { if (n.emp) continue; for (const e of Object.values(EMPIRES)) {
     if (s.empFormed[e.id]) continue; const p = empireProgress(s, n.id, e.id); if (!p.ok) continue;
     s.empFormed[e.id] = n.id; n.emp = e.id; n.name = e.name; n.flag = e.flag; n.color = e.color; markAll();
-    log(s, `👑 ¡${e.name} renace bajo el mando de ${NAME(n.id)}!`, 'epic', [n.id]); hooks.sfx?.('empire'); break; } }
+    log(s, `👑 ¡${e.name} renace bajo el mando de ${NAME(n.id)}!`, 'epic', [n.id], { k: 'empire', icon: '👑', a: n.id, at: n.cap }); hooks.sfx?.('empire'); break; } }
 }
 
 // ---------------- diplomacy ----------------
@@ -290,7 +301,7 @@ function betray(s, a, pen) { const n = s.nations[a]; n.rep = Math.max(0, n.rep -
 export function breakPact(s, p, breaker) {
   s.pacts.splice(s.pacts.indexOf(p), 1); const other = p.a === breaker ? p.b : p.a, pen = p.type === 'alliance' ? 30 : p.type === 'embassy' ? 4 : 6;
   if (pen > 5) betray(s, breaker, pen); addRel(s, breaker, other, -pen * 1.5); relDirty = true;
-  log(s, `${s.nations[breaker].name} rompió: ${PACTS[p.type].name.toLowerCase()} con ${s.nations[other].name}.`, 'bad', [breaker, other]);
+  log(s, `${s.nations[breaker].name} rompió: ${PACTS[p.type].name.toLowerCase()} con ${s.nations[other].name}.`, 'bad', [breaker, other], { k: 'break', icon: '💔', a: breaker, b: other });
 }
 export function evaluate(s, from, to, type) {
   const a = s.nations[from], b = s.nations[to], P = persOf(b), r = rel(s, to, from) + (a.rep - 50) / 2;
@@ -307,7 +318,7 @@ export function evaluate(s, from, to, type) {
 }
 export function sign(s, a, b, type) {
   if (!pactOf(s, a, b, type)) s.pacts.push({ a, b, type, since: s.t }); addRel(s, a, b, type === 'alliance' ? 20 : type === 'embassy' ? 4 : 8); relDirty = true;
-  log(s, `${PACTS[type].icon} ${s.nations[a].name} y ${s.nations[b].name}: ${PACTS[type].name.toLowerCase()}.`, 'good', [a, b]);
+  log(s, `${PACTS[type].icon} ${s.nations[a].name} y ${s.nations[b].name}: ${PACTS[type].name.toLowerCase()}.`, 'good', [a, b], { k: 'pact', icon: PACTS[type].icon, a, b });
 }
 export function propose(s, from, to, type) { const r = evaluate(s, from, to, type); if (r.ok) sign(s, from, to, type); else addRel(s, from, to, -1); return r; }
 export function improveRelations(s, from, to) {
@@ -322,7 +333,7 @@ export function becomePuppet(s, over, id) {
   const n = s.nations[id]; n.overlord = over; n.since = s.t; s.pacts = s.pacts.filter(p => !(p.a === id || p.b === id) || p.type === 'embassy');
   for (const e of enemiesOf(s, id)) if (e !== over) endWar(s, id, e, true);
   for (const e of enemiesOf(s, over)) if (!atWar(s, id, e)) s.wars.push({ a: id, b: e, start: s.t, sa: 0, sb: 0 });
-  relDirty = true; markAll(); log(s, `🎭 ${n.name} es ahora un estado títere de ${s.nations[over].name}.`, 'epic', [id, over]);
+  relDirty = true; markAll(); log(s, `🎭 ${n.name} es ahora un estado títere de ${s.nations[over].name}.`, 'epic', [id, over], { k: 'puppet', icon: '🎭', a: over, b: id });
 }
 export function offerPuppet(s, from, to) {
   const a = s.nations[from], b = s.nations[to]; if (b.overlord) return { ok: false, msg: 'Ya tiene dueño.' }; if (atWar(s, from, to)) return { ok: false, msg: 'Estáis en guerra.' };
@@ -334,7 +345,7 @@ export function annex(s, over, id) {
   const o = s.nations[over], v = s.nations[id]; if (v.overlord !== over) return { ok: false }; if (s.t - v.since < 40) return { ok: false, msg: `Espera ${40 - (s.t - v.since)} días.` };
   if (o.money < 150) return { ok: false, msg: 'Cuesta 150🪙.' }; o.money -= 150; betray(s, over, 6);
   for (const r of [...v.regs]) { const g = s.regions[r]; g.owner = over; o.regs.push(r); dirty.add(r); } v.regs = []; v.alive = false; v.overlord = null; v.troops = 0;
-  o.troops += 0; kill0(s, id); markAll(); log(s, `${o.name} anexó a ${v.name}.`, 'epic', [over, id]); return { ok: true, msg: `Anexaste a ${v.name}.` };
+  o.troops += 0; kill0(s, id); markAll(); log(s, `${o.name} anexó a ${v.name}.`, 'epic', [over, id], { k: 'annex', icon: '📎', a: over, b: id }); return { ok: true, msg: `Anexaste a ${v.name}.` };
 }
 function kill0(s, id) { s.wars = s.wars.filter(w => w.a !== id && w.b !== id); s.pacts = s.pacts.filter(p => p.a !== id && p.b !== id); s.orders = s.orders.filter(o => o.o !== id); s.inbox = s.inbox.filter(p => p.from !== id); }
 
@@ -349,7 +360,7 @@ export function canDeclare(s, a, b) {
 export function declareWar(s, a, b) {
   const c = canDeclare(s, a, b); if (!c.ok) return c; const A = s.nations[a], B = s.nations[b];
   s.wars.push({ a, b, start: s.t, sa: 0, sb: 0 }); hooks.sfx?.('war'); relDirty = true;
-  log(s, `⚔️ ¡${A.name} declaró la guerra a ${B.name}!`, a === s.player ? 'good' : b === s.player ? 'bad' : '', [a, b]);
+  log(s, `⚔️ ¡${A.name} declaró la guerra a ${B.name}!`, a === s.player ? 'good' : b === s.player ? 'bad' : '', [a, b], { k: 'war', icon: '⚔️', a, b, at: B.cap });
   for (const o of alive(s)) {
     if (o.id === a || o.id === b) continue; const sideB = o.overlord === b || (isAllied(s, o.id, b) && !isAllied(s, o.id, a) && rnd() < 0.9), sideA = o.overlord === a || (isAllied(s, o.id, a) && !isAllied(s, o.id, b) && rel(s, o.id, b) < 20 && rnd() < 0.5);
     if (sideB) joinWar(s, o.id, a); else if (sideA) joinWar(s, o.id, b);
@@ -358,11 +369,11 @@ export function declareWar(s, a, b) {
 }
 function joinWar(s, x, enemy) {
   if (x === enemy || atWar(s, x, enemy) || isAllied(s, x, enemy) || !s.nations[enemy]?.alive) return;
-  s.wars.push({ a: x, b: enemy, start: s.t, sa: 0, sb: 0, help: true }); relDirty = true; log(s, `${s.nations[x].name} entra en la guerra contra ${s.nations[enemy].name}.`, 'bad', [x, enemy]);
+  s.wars.push({ a: x, b: enemy, start: s.t, sa: 0, sb: 0, help: true }); relDirty = true; log(s, `${s.nations[x].name} entra en la guerra contra ${s.nations[enemy].name}.`, 'bad', [x, enemy], { k: 'war', icon: '⚔️', a: x, b: enemy });
 }
 export function endWar(s, a, b, silent) {
   const w = warOf(s, a, b); if (w) s.wars.splice(s.wars.indexOf(w), 1); s.nations[a].truce[b] = s.t + 60; s.nations[b].truce[a] = s.t + 60; relDirty = true;
-  if (!silent) log(s, `🕊 ¡Paz entre ${s.nations[a].name} y ${s.nations[b].name}!`, 'good', [a, b]);
+  if (!silent) log(s, `🕊 ¡Paz entre ${s.nations[a].name} y ${s.nations[b].name}!`, 'good', [a, b], { k: 'peace', icon: '🕊️', a, b });
 }
 export function warScore(s, a, b) {
   const w = warOf(s, a, b); if (!w) return 0; const mine = w.a === a ? w.sa : w.sb, theirs = w.a === a ? w.sb : w.sa;
@@ -390,13 +401,15 @@ export function applyPeace(s, proposer, target, deal) {
   if (deal === 'puppet') becomePuppet(s, proposer, target);
 }
 export function addProposal(s, p) {
-  if (s.inbox.some(x => x.from === p.from && x.kind === p.kind && x.deal === p.deal)) return;
-  s.inbox.push({ ...p, id: s.nid++, exp: s.t + 45 }); if (s.inbox.length > 20) s.inbox.shift(); hooks.event?.({ text: `🔔 ${s.nations[p.from].name} te envía un mensaje.`, tone: 'epic', who: [s.player], inbox: true });
+  p.to ??= s.player;
+  if (s.inbox.some(x => x.from === p.from && x.to === p.to && x.kind === p.kind && x.deal === p.deal)) return;
+  s.inbox.push({ ...p, id: s.nid++, exp: s.t + 45 }); if (s.inbox.length > 20) s.inbox.shift(); hooks.event?.({ text: `🔔 ${s.nations[p.from].name} te envía un mensaje.`, tone: 'epic', who: [p.to], inbox: true });
 }
 export function acceptProposal(s, p) {
   s.inbox.splice(s.inbox.indexOf(p), 1);
-  if (p.kind === 'peace') { if (atWar(s, p.from, s.player)) applyPeace(s, p.from, s.player, p.deal); }
-  else if (!atWar(s, p.from, s.player) && s.nations[p.from].alive) sign(s, p.from, s.player, p.kind);
+  const me = p.to ?? s.player;
+  if (p.kind === 'peace') { if (atWar(s, p.from, me)) applyPeace(s, p.from, me, p.deal); }
+  else if (!atWar(s, p.from, me) && s.nations[p.from].alive) sign(s, p.from, me, p.kind);
 }
 
 // ---------------- armies ----------------
@@ -421,7 +434,7 @@ export function sendArmy(s, nid, rid, frac) {
 }
 function arrive(s, o) {
   const A = s.nations[o.o]; if (!A?.alive) return; const g = s.regions[o.to];
-  if (o.kind === 'expand') { if (!g.owner) { g.owner = o.o; A.regs.push(o.to); g.dmg = 0; dirty.add(o.to); relDirty = true; log(s, `🏳 ${A.name} reclamó ${NAME(o.to)}.`, o.o === s.player ? 'good' : '', [o.o]); } else A.money += expandCost(o.to); return; }
+  if (o.kind === 'expand') { if (!g.owner) { g.owner = o.o; A.regs.push(o.to); g.dmg = 0; dirty.add(o.to); relDirty = true; log(s, `🏳 ${A.name} reclamó ${NAME(o.to)}.`, o.o === s.player ? 'good' : '', [o.o], { k: 'claim', icon: '🏳️', a: o.o, at: o.to }); } else A.money += expandCost(o.to); return; }
   if (g.owner === o.o) { A.troops += o.n; return; }
   if (!g.owner) { g.owner = o.o; A.regs.push(o.to); dirty.add(o.to); A.troops += o.n; return; }
   const D = s.nations[g.owner]; if (!atWar(s, o.o, D.id)) { A.troops += o.n; return; }
@@ -434,11 +447,11 @@ function arrive(s, o) {
   if (atk * (0.85 + rnd() * 0.4) > def * (0.85 + rnd() * 0.4)) {
     const lossA = Math.max(1, Math.round(n * Math.min(0.6, 0.15 + 0.35 * def / Math.max(1, atk)))), lossD = Math.min(D.troops, D.troops * share * Math.min(0.7, 0.2 + 0.3 * atk / Math.max(1, def)));
     D.troops -= lossD; A.troops += Math.max(0, n - lossA) * 0.9; if (w) (w.a === o.o ? w.sa++ : w.sb++);
-    log(s, `💥 ¡${A.name} conquistó ${NAME(o.to)}!`, o.o === s.player ? 'good' : D.id === s.player ? 'bad' : '', [o.o, D.id]); hooks.sfx?.(o.o === s.player || D.id === s.player ? 'boom' : null);
+    log(s, `💥 ¡${A.name} conquistó ${NAME(o.to)}!`, o.o === s.player ? 'good' : D.id === s.player ? 'bad' : '', [o.o, D.id], { k: 'conquer', icon: '💥', a: o.o, b: D.id, at: o.to }); hooks.sfx?.(o.o === s.player || D.id === s.player ? 'boom' : null);
     transfer(s, o.to, o.o); for (const x of alive(s)) if (x.id !== o.o && x.id !== D.id) addRel(s, x.id, o.o, -1);
   } else {
     D.troops = Math.max(0, D.troops - D.troops * share * 0.25 * Math.min(1, atk / Math.max(1, def))); A.troops += n * 0.2;
-    log(s, `El ataque de ${A.name} a ${NAME(o.to)} fracasó.`, o.o === s.player ? 'bad' : D.id === s.player ? 'good' : '', [o.o, D.id]);
+    log(s, `El ataque de ${A.name} a ${NAME(o.to)} fracasó.`, o.o === s.player ? 'bad' : D.id === s.player ? 'good' : '', [o.o, D.id], { k: 'fail', icon: '🛡️', a: o.o, b: D.id, at: o.to });
   }
 }
 
@@ -455,7 +468,7 @@ export function tick(s) {
   const list = alive(s);
   for (const n of list) {
     const e = econ(s, n); n.money += e.net; if (n.money < 0) { n.money = 0; n.troops *= 0.996; }
-    n.ind += e.ind; if (n.research) { n.research.got += e.rp * (n.bot ? 0.5 : 1); if (n.research.got >= TECHS[n.research.id].cost) { n.tech[n.research.id] = 1; const id = n.research.id; n.research = null; log(s, `🔬 ${n.name} investigó ${TECHS[id].name}.`, n.id === s.player ? 'epic' : '', [n.id]); } }
+    n.ind += e.ind; if (n.research) { n.research.got += e.rp * (n.bot ? 0.5 : 1); if (n.research.got >= TECHS[n.research.id].cost) { n.tech[n.research.id] = 1; const id = n.research.id; n.research = null; log(s, `🔬 ${n.name} investigó ${TECHS[id].name}.`, n.id === s.player ? 'epic' : '', [n.id], { k: 'tech', icon: '🔬', a: n.id }); } }
     if (n.sp) { if (n.sp.cd > 0) n.sp.cd--; if (n.sp.act > 0) n.sp.act--; }
     for (const r of n.regs) { const g = s.regions[r]; if (g.dmg > 0) g.dmg = Math.max(0, g.dmg - 0.4); g.pop *= 1 + 0.00001 * g.city; }
   }

@@ -1,6 +1,7 @@
 import { Engine } from './engine.js';
 import { store } from './store.js';
-import { wipe, ui } from '../ui/dom.js';
+import { wipe, ui, h, modal } from '../ui/dom.js';
+import { multiplayer } from './multiplayer.js';
 import { checkAchievements } from './economy.js';
 
 /**
@@ -14,7 +15,17 @@ const LOADERS = {
 };
 
 export class GameManager {
-  constructor(canvas) { this.engine = new Engine(canvas); this.current = null; this.id = null; this.playTimer = setInterval(() => { store.mutate(s => { s.stats.playtime += 5; }); }, 5000); }
+  constructor(canvas) { this.engine = new Engine(canvas); this.current = null; this.id = null; this.playTimer = setInterval(() => { store.mutate(s => { s.stats.playtime += 5; }); }, 5000);
+    // A host started a multiplayer Conquest game: offer to join from anywhere in the app.
+    multiplayer.on('message', ({ msg }) => { if (msg?.t === 'cq:invite' && multiplayer.role === 'guest' && this.id !== 'conquest' && !this.inviteOpen) this.#invite(msg); });
+  }
+
+  #invite(msg) {
+    this.inviteOpen = true;
+    const m = modal('🗺️ Conquista Mundial', [h('p', `${msg.name || 'El anfitrión'} está jugando Conquista. ¿Te unes?`),
+      h('button.btn.green', { style: { width: '100%', marginBottom: '8px' }, onclick: () => { this.inviteOpen = false; m.close(); this.launch('conquest'); } }, '▶ Unirme'),
+      h('button.btn', { style: { width: '100%' }, onclick: () => m.close() }, 'Ahora no')], { onClose: () => setTimeout(() => { this.inviteOpen = false; }, 20000) });
+  }
 
   async #swap(id, makeApp) {
     this.current?.unmount?.(); this.engine.setActive(null); this.current = null;
