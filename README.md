@@ -81,3 +81,26 @@ Todas las banderas ahora conservan la proporción de su archivo original al proy
 - La conexión usa WebRTC mediante PeerJS y requiere Internet. No necesita configurar un servidor propio.
 - Los perfiles y recompensas se guardan localmente en cada dispositivo. Conquista Mundial y Adivina la Bandera todavía no comparten una partida sincronizada en esta versión.
 - Ejecuta `npm install` para instalar PeerJS y despliega el proyecto normalmente en Vercel/HTTPS.
+
+## Corrección de conexión de salas multijugador
+
+- Host y visitante usan explícitamente el mismo servidor público de señalización PeerJS (`0.peerjs.com`, HTTPS/WSS por 443).
+- El anfitrión registra las conexiones entrantes antes de anunciar que la sala está lista.
+- Se añadió confirmación de sala (`room-accepted`) y rechazo explícito si está llena.
+- El visitante escucha la confirmación antes de que el canal abra para evitar perder un mensaje rápido.
+- Los errores ahora distinguen entre servidor no disponible, anfitrión no encontrado, sala cerrada y sala llena.
+- La conexión requiere Internet y puede verse afectada si la red bloquea WebSocket/WebRTC; esta app estática no puede garantizar conexiones en redes restrictivas sin un servidor de señalización propio.
+
+
+## Multijugador: compatibilidad de salas basada en RocketPrismas
+
+Se reemplazó el esquema anterior de IDs largos por el patrón de salas que utiliza RocketPrismas:
+- Mismo servidor público de señalización PeerJS (`0.peerjs.com:443`, HTTPS).
+- IDs de sala deterministas derivados del código (`cb` + cuatro dígitos).
+- Configuración ICE STUN/TURN de respaldo de RocketPrismas.
+- El anfitrión reserva el ID y solo publica el código después del evento `open` del servidor.
+- El visitante abre su propio Peer y conecta al ID derivado del mismo código.
+- Confirmación `room-accepted` / `room-rejected` y espera explícita del canal de datos.
+- Hasta 8 visitantes por anfitrión.
+
+La presencia y sincronización de avatares continúa limitada al hub y al modo Evolución, tal como en la versión anterior.
