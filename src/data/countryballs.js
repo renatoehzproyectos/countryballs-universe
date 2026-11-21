@@ -28,24 +28,24 @@ export const BALLS = [
     ['sa', 'Saudi Arabiaball', 54], ['ua', 'Ukraineball', 56], ['gr', 'Greeceball', 58], ['ie', 'Irelandball', 60]
   ]),
   ...tier('legendary', [
-    ['su', 'Sovietball', 62], ['rome', 'Roman Empireball', 66], ['british', 'British Empireball', 70],
-    ['mongol', 'Mongol Empireball', 74], ['aztec', 'Aztec Empireball', 78], ['mali_empire', 'Mali Empireball', 82]
+    ['su', 'Soviético-ball', 62], ['rome', 'Imperio Romano-ball', 66], ['british', 'Imperio Británico-ball', 70],
+    ['mongol', 'Imperio Mongol-ball', 74], ['aztec', 'Imperio Azteca-ball', 78], ['mali_empire', 'Imperio de Mali-ball', 82]
   ]),
   ...tier('mythical', [
-    ['eu', 'EUball', 86], ['aq', 'Antarcticaball', 90], ['atlantis', 'Atlantisball', 94], ['galaxy', 'Cosmicball', 98]
+    ['eu', 'EUball', 86], ['aq', 'Antártida-ball', 90], ['atlantis', 'Atlántida-ball', 94], ['galaxy', 'Cósmico-ball', 98]
   ]),
   ...['gold', 'rainbow', 'void', 'pirate'].map((id, i) => ({
     id, flag: id, rarity: 'secret', secret: true, level: 999, price: 0,
-    name: ['Golden Ball', 'Rainbowball', 'Voidball', 'Pirateball'][i]
+    name: ['Bola Dorada', 'Bola Arcoíris', 'Bola del Vacío', 'Bola Pirata'][i]
   }))
 ];
 
 /** Hidden unlock rules; receive the full save state. `hint` shows in the collection book once the ball is discovered. */
 export const SECRET_RULES = {
-  gold:    { hint: 'Rebirth once.',                      test: s => s.stats.rebirths >= 1 },
-  rainbow: { hint: 'Reach a 25 streak in Guess the Flag.', test: s => s.stats.bestStreak >= 25 },
-  void:    { hint: 'Rebirth three times.',               test: s => s.stats.rebirths >= 3 },
-  pirate:  { hint: 'Defeat 5 bosses.',                   test: s => s.stats.bossesDefeated >= 5 }
+  gold:    { hint: 'Haz un Renacer.',                      test: s => s.stats.rebirths >= 1 },
+  rainbow: { hint: 'Racha de 25 en Adivina la bandera.', test: s => s.stats.bestStreak >= 25 },
+  void:    { hint: 'Haz tres Renaceres.',               test: s => s.stats.rebirths >= 3 },
+  pirate:  { hint: 'Vence a 5 jefes.',                   test: s => s.stats.bossesDefeated >= 5 }
 };
 
 export const BALL_BY_ID = Object.fromEntries(BALLS.map(b => [b.id, b]));

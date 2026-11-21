@@ -24,7 +24,7 @@ function loadTemplate() {
   return templatePromise;
 }
 
-/** Equirectangular UVs: flag occupies ~200° around the front (+X) and the full height. */
+/** Equirectangular UVs; the flag spans 270° around the front (+X) and the full height. */
 function applyFrontUVs(geo) {
   const p = geo.attributes.position, uv = new Float32Array(p.count * 2);
   for (let i = 0; i < p.count; i++) {
@@ -35,13 +35,13 @@ function applyFrontUVs(geo) {
   geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
 }
 
-/** Flag texture: flag fills the front, edge pixels are smeared around the back. */
+/** Flag texture: the flag wraps 270° around the front (75% of the surface); edge pixels fill the back. */
 export async function getFlagTexture(key) {
   if (textures.has(key)) return textures.get(key);
   const img = await loadFlag(key);
   const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
   const g = c.getContext('2d'), sw = img.naturalWidth || img.width, sh = img.naturalHeight || img.height;
-  const x0 = 1024 * 0.22, x1 = 1024 * 0.78;
+  const x0 = 1024 * 0.125, x1 = 1024 * 0.875; // 75% of the ball's surface
   g.drawImage(img, 0, 0, 1, sh, 0, 0, x0, 512);
   g.drawImage(img, sw - 1, 0, 1, sh, x1, 0, 1024 - x1, 512);
   g.drawImage(img, 0, 0, sw, sh, x0, 0, x1 - x0, 512);

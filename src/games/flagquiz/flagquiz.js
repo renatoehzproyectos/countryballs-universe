@@ -9,12 +9,12 @@ import { CONTINENTS, ALL, makeQuestion, poolFor, mapPool, masteryOf, empiresEarn
 import { openProfile } from '../../ui/panels.js';
 
 const MODES = [
-  { id: 'classic', icon: '🎯', name: 'Classic', desc: '20 flags · 3 lives · rising difficulty' },
-  { id: 'time', icon: '⏱️', name: 'Time Attack', desc: 'As many as you can in 60 seconds' },
-  { id: 'continents', icon: '🌍', name: 'Continents', desc: 'Master a continent to earn empires' },
-  { id: 'expert', icon: '🧠', name: 'Expert', desc: 'Lookalike & obscure flags · 3 lives' },
-  { id: 'map', icon: '📍', name: 'Map Challenge', desc: 'Find the flag’s country on the map' },
-  { id: 'daily', icon: '📅', name: 'Daily Challenge', desc: 'Same 10 flags for everyone today' }
+  { id: 'classic', icon: '🎯', name: 'Clásico', desc: '20 banderas · 5 vidas' },
+  { id: 'time', icon: '⏱️', name: 'Contrarreloj', desc: 'Todas las que puedas en 60 segundos' },
+  { id: 'continents', icon: '🌍', name: 'Continentes', desc: 'Domina un continente y gana imperios' },
+  { id: 'expert', icon: '🧠', name: 'Experto', desc: 'Banderas parecidas y raras · 5 vidas' },
+  { id: 'map', icon: '📍', name: 'Reto del mapa', desc: 'Encuentra el país en el mapa' },
+  { id: 'daily', icon: '📅', name: 'Reto diario', desc: 'Las mismas 10 banderas para todos hoy' }
 ];
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -30,29 +30,29 @@ export default class FlagQuiz {
     clearInterval(this.timer); this.run = null; const s = store.state, q = s.quiz, rec = q.records;
     const earned = empiresEarned(); earned.forEach(id => grantEmpire(id));
     this.root.replaceChildren(
-      h('h2', { style: { margin: '0 0 4px' } }, '🚩 Guess the Flag'), h('p.mute', { style: { margin: '0 0 12px' } }, `${s.stats.flagsCorrect} correct · best streak ${s.stats.bestStreak} · ${q.wrong.length} flags to review`),
+      h('h2', { style: { margin: '0 0 4px' } }, '🚩 Adivina la bandera'), h('p.mute', { style: { margin: '0 0 12px' } }, `${s.stats.flagsCorrect} aciertos · mejor racha ${s.stats.bestStreak} · ${q.wrong.length} por repasar`),
       h('div.grid', { style: { gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))' } }, MODES.map(m => h('button.card', { style: { cursor: 'pointer', color: 'inherit' }, onclick: () => { sfx.click(); m.id === 'continents' ? this.continentPick() : this.start(m.id); } },
         h('div', { style: { fontSize: '34px' } }, m.icon), h('div.nm', m.name), h('div.mute', { style: { fontSize: '11px' } }, m.desc),
-        h('div', { style: { fontSize: '11px', color: 'var(--gold)' } }, m.id === 'daily' ? (q.daily.date === today() ? `Today: ${q.daily.score}/10` : 'Not played today') : rec[m.id] != null ? `Record: ${rec[m.id]}` : '')))),
-      h('h3', '👑 Empire rewards (unlock in World Conquest)'),
+        h('div', { style: { fontSize: '11px', color: 'var(--gold)' } }, m.id === 'daily' ? (q.daily.date === today() ? `Hoy: ${q.daily.score}/10` : '¡Aún no jugado hoy!') : rec[m.id] != null ? `Récord: ${rec[m.id]}` : '')))),
+      h('h3', '👑 Imperios (se juegan en Conquista Mundial)'),
       h('div.card', { style: { alignItems: 'stretch', textAlign: 'left' } }, Object.values(EMPIRES).map(e => { const own = s.ownedEmpires.includes(e.id);
-        return h('div.row', { style: { padding: '4px 0' } }, ballAvatar(e.flag, 34, !own), h('div.grow', h('div.nm', e.name), h('div.mute', { style: { fontSize: '11px' } }, own ? '✅ Unlocked' : EMPIRE_REQ[e.id]))); })),
-      h('h3', '🗺️ Continent mastery (80% of flags answered correctly)'),
+        return h('div.row', { style: { padding: '4px 0' } }, ballAvatar(e.flag, 34, !own), h('div.grow', h('div.nm', e.name), h('div.mute', { style: { fontSize: '11px' } }, own ? '✅ Desbloqueado' : EMPIRE_REQ[e.id]))); })),
+      h('h3', '🗺️ Dominio de continentes (acierta el 80 % de sus banderas)'),
       h('div.card', { style: { alignItems: 'stretch', textAlign: 'left' } }, CONTINENTS.map(c => { const m = masteryOf(c);
         return h('div', { style: { padding: '4px 0' } }, h('div.row', h('span.grow', c), h('span.mute', `${m.have}/${m.need}${m.done ? ' ✅' : ''}`)), h('div.bar', h('i', { style: { width: Math.min(100, m.have / m.need * 100) + '%' } }))); })),
-      h('div', { style: { height: '10px' } }), h('button.btn', { onclick: () => openProfile() }, '🏆 Achievements & stats'));
+      h('div', { style: { height: '10px' } }), h('button.btn', { onclick: () => openProfile() }, '🏆 Logros y estadísticas'));
   }
   continentPick() {
-    this.root.replaceChildren(h('h2', 'Pick a continent'), h('div.grid', CONTINENTS.map(c => { const m = masteryOf(c);
-      return h('button.card', { style: { color: 'inherit', cursor: 'pointer' }, onclick: () => this.start('continents', c) }, h('div.nm', c), h('div.mute', `${m.have}/${m.total} learned`), h('div.bar', { style: { width: '100%' } }, h('i', { style: { width: Math.min(100, m.have / m.need * 100) + '%' } }))); })),
-      h('div', { style: { height: '10px' } }), h('button.btn', { onclick: () => this.menu() }, '← Back'));
+    this.root.replaceChildren(h('h2', 'Elige un continente'), h('div.grid', CONTINENTS.map(c => { const m = masteryOf(c);
+      return h('button.card', { style: { color: 'inherit', cursor: 'pointer' }, onclick: () => this.start('continents', c) }, h('div.nm', c), h('div.mute', `${m.have}/${m.total} aprendidas`), h('div.bar', { style: { width: '100%' } }, h('i', { style: { width: Math.min(100, m.have / m.need * 100) + '%' } }))); })),
+      h('div', { style: { height: '10px' } }), h('button.btn', { onclick: () => this.menu() }, '← Volver'));
   }
 
   // ------------------------------------------------------------ run
   start(mode, cont) {
     const classic = mode === 'classic', expert = mode === 'expert', daily = mode === 'daily';
     const pool = mode === 'continents' ? poolFor(cont) : mode === 'map' ? mapPool() : ALL;
-    this.run = { mode, cont, pool, score: 0, correct: 0, streak: 0, best: 0, asked: 0, total: classic ? 20 : daily ? 10 : mode === 'continents' ? 15 : Infinity, lives: classic || expert || mode === 'map' ? 3 : 99, time: 60, seen: new Set(), rand: daily ? mulberry([...today()].reduce((a, c) => a * 31 + c.charCodeAt(0), 7)) : Math.random, coins: 0, xp: 0, locked: false, learned: [] };
+    this.run = { mode, cont, pool, score: 0, correct: 0, streak: 0, best: 0, asked: 0, total: classic ? 20 : daily ? 10 : mode === 'continents' ? 15 : Infinity, lives: classic || expert || mode === 'map' ? 5 : 99, time: 60, seen: new Set(), rand: daily ? mulberry([...today()].reduce((a, c) => a * 31 + c.charCodeAt(0), 7)) : Math.random, coins: 0, xp: 0, locked: false, learned: [] };
     if (mode === 'time') { this.timer = setInterval(() => { this.run.time--; this.#hud(); if (this.run.time <= 0) this.end(); }, 1000); }
     this.next();
   }
@@ -66,7 +66,7 @@ export default class FlagQuiz {
 
   #hud() {
     const r = this.run; if (!this.elHud) return;
-    this.elHud.textContent = `${r.mode === 'time' ? `⏱ ${r.time}s · ` : ''}${r.lives < 50 ? '❤'.repeat(Math.max(0, r.lives)) + ' · ' : ''}Score ${r.score} · 🔥 ${r.streak}${r.total < Infinity ? ` · ${Math.min(r.asked, r.total)}/${r.total}` : ''}`;
+    this.elHud.textContent = `${r.mode === 'time' ? `⏱ ${r.time}s · ` : ''}${r.lives < 50 ? '❤'.repeat(Math.max(0, r.lives)) + ' · ' : ''}Puntos ${r.score} · 🔥 ${r.streak}${r.total < Infinity ? ` · ${Math.min(r.asked, r.total)}/${r.total}` : ''}`;
   }
 
   #render() {
@@ -81,7 +81,7 @@ export default class FlagQuiz {
   #mapUi() {
     this.mapView = createMapView({ onTap: (id, el) => this.answer(id, el) }); this.mapEls = this.mapView.paths;
     const box = h('div', { style: { height: '38vh', minHeight: '220px', borderRadius: '14px', overflow: 'hidden' } }, this.mapView.el);
-    return h('div', box, h('div.mute.center', { style: { padding: '6px', fontSize: '12px' } }, 'Drag to pan · pinch / scroll to zoom · tap the country'));
+    return h('div', box, h('div.mute.center', { style: { padding: '6px', fontSize: '12px' } }, 'Arrastra para mover · pellizca para acercar · toca el país'));
   }
 
   answer(code, el) {
@@ -99,7 +99,7 @@ export default class FlagQuiz {
     }
     this.#hud(); checkAchievements();
     // reveal the answer (name) briefly before moving on
-    const note = h('div.center', { style: { marginTop: '10px', fontWeight: 800 } }, ok ? `✅ ${t.name}` : `❌ It was ${t.name}`); this.root.append(note);
+    const note = h('div.center', { style: { marginTop: '10px', fontWeight: 800 } }, ok ? `✅ ${t.name}` : `❌ Era ${t.name}`); this.root.append(note);
     setTimeout(() => this.next(), ok ? 650 : 1500);
   }
 
@@ -111,11 +111,11 @@ export default class FlagQuiz {
       store.mutate(s => { const k = r.mode; s.quiz.records[k] = Math.max(s.quiz.records[k] ?? 0, r.score); if (r.mode === 'daily' && s.quiz.daily.date !== today()) s.quiz.daily = { date: today(), score: r.correct }; }); }
     const earned = empiresEarned().filter(e => !store.state.ownedEmpires.includes(e)); earned.forEach(e => grantEmpire(e)); checkAchievements();
     if (quit && r.asked <= 1) return this.menu();
-    this.root.replaceChildren(h('div.center', { style: { maxWidth: '460px', margin: '0 auto' } }, h('h2', quit ? 'Run ended' : r.lives <= 0 ? '💔 Game over' : '🏁 Finished!'),
-      h('div.card', { style: { fontSize: '16px' } }, h('div', { style: { fontSize: '36px', fontWeight: 900, color: 'var(--gold)' } }, r.score), h('div', `${r.correct} correct · best streak ${r.best}`), h('div', `Reward: 🪙 ${fmt(coins)} · ⭐ ${xp} XP${bonus ? ' (daily bonus!)' : ''}`),
-        r.learned.length ? h('div.mute', { style: { fontSize: '12px' } }, `Newly learned: ${r.learned.slice(0, 6).join(', ')}${r.learned.length > 6 ? '…' : ''}`) : null),
-      ...earned.map(e => h('div.card', { style: { borderColor: 'var(--gold)', marginTop: '10px' } }, h('div', '👑 EMPIRE UNLOCKED!'), ballAvatar(EMPIRES[e].flag, 70), h('div.nm', EMPIRES[e].name), h('div.mute', 'Now playable in World Conquest'))),
-      h('div.row', { style: { marginTop: '14px' } }, h('button.btn.gold.grow', { onclick: () => this.start(r.mode, r.cont) }, '↻ Play again'), h('button.btn.grow', { onclick: () => this.menu() }, 'Menu')),
-      earned.length ? h('button.btn.green', { style: { marginTop: '10px', width: '100%' }, onclick: () => this.manager.launch('conquest') }, '🗺️ Go to World Conquest') : null));
+    this.root.replaceChildren(h('div.center', { style: { maxWidth: '460px', margin: '0 auto' } }, h('h2', quit ? 'Partida terminada' : r.lives <= 0 ? '💔 ¡Sin vidas!' : '🏁 ¡Terminaste!'),
+      h('div.card', { style: { fontSize: '16px' } }, h('div', { style: { fontSize: '36px', fontWeight: 900, color: 'var(--gold)' } }, r.score), h('div', `${r.correct} aciertos · mejor racha ${r.best}`), h('div', `Premio: 🪙 ${fmt(coins)} · ⭐ ${xp} XP${bonus ? ' (¡bonus diario!)' : ''}`),
+        r.learned.length ? h('div.mute', { style: { fontSize: '12px' } }, `Nuevas: ${r.learned.slice(0, 6).join(', ')}${r.learned.length > 6 ? '…' : ''}`) : null),
+      ...earned.map(e => h('div.card', { style: { borderColor: 'var(--gold)', marginTop: '10px' } }, h('div', '👑 ¡IMPERIO DESBLOQUEADO!'), ballAvatar(EMPIRES[e].flag, 70), h('div.nm', EMPIRES[e].name), h('div.mute', 'Ya puedes jugarlo en Conquista Mundial'))),
+      h('div.row', { style: { marginTop: '14px' } }, h('button.btn.gold.grow', { onclick: () => this.start(r.mode, r.cont) }, '↻ Otra vez'), h('button.btn.grow', { onclick: () => this.menu() }, 'Menú')),
+      earned.length ? h('button.btn.green', { style: { marginTop: '10px', width: '100%' }, onclick: () => this.manager.launch('conquest') }, '🗺️ Ir a Conquista Mundial') : null));
   }
 }

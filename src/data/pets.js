@@ -15,8 +15,8 @@ export const PETS = [
 ];
 export const PET_BY_ID = Object.fromEntries(PETS.map(p => [p.id, p]));
 export const EGGS = [
-  { id: 'basic', name: 'Basic Egg',  price: 400,  cur: 'coins', odds: { common: 80, rare: 19, epic: 1 } },
-  { id: 'rare',  name: 'Rare Egg',   price: 4000, cur: 'coins', odds: { common: 30, rare: 50, epic: 18, legendary: 2 } },
-  { id: 'mythic',name: 'Mythic Egg', price: 25,   cur: 'gems',  odds: { rare: 30, epic: 45, legendary: 20, mythical: 4.5, secret: 0.5 } }
+  { id: 'basic', name: 'Huevo básico',  price: 400,  cur: 'coins', odds: { common: 80, rare: 19, epic: 1 } },
+  { id: 'rare',  name: 'Huevo raro',   price: 4000, cur: 'coins', odds: { common: 30, rare: 50, epic: 18, legendary: 2 } },
+  { id: 'mythic',name: 'Huevo mítico', price: 25,   cur: 'gems',  odds: { rare: 30, epic: 45, legendary: 20, mythical: 4.5, secret: 0.5 } }
 ];
-export const petTypeLabel = { coins: 'Coins', xp: 'XP', attack: 'Damage', magnet: 'Magnet', luck: 'Luck' };
+export const petTypeLabel = { coins: 'Monedas', xp: 'XP', attack: 'Fuerza', magnet: 'Imán', luck: 'Suerte' };

@@ -40,7 +40,7 @@ export function modal(title, body, { onClose } = {}) {
   ui().append(wrap); return { close, body: body_, el: wrap };
 }
 export const confirmBox = (title, msg, onYes) => {
-  const m = modal(title, [h('p', msg), h('div.row', h('button.btn.red.grow', { onclick: () => { m.close(); onYes(); } }, 'Yes'), h('button.btn.grow', { onclick: () => m.close() }, 'Cancel'))]);
+  const m = modal(title, [h('p', msg), h('div.row', h('button.btn.red.grow', { onclick: () => { m.close(); onYes(); } }, 'Sí'), h('button.btn.grow', { onclick: () => m.close() }, 'Cancelar'))]);
 };
 
 /** Fullscreen colour wipe between scenes. */

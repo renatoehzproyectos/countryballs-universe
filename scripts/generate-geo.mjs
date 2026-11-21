@@ -34,7 +34,7 @@ for (const c of countries) {
   let cont = c.region;
   if (cont === 'Americas') cont = sub === 'South America' ? 'South America' : 'North America';
   meta[c.cca2] = {
-    n: c.name.common, r: cont, cap: (c.capital && c.capital[0]) || '—',
+    n: c.translations?.spa?.common ?? c.name.common, r: cont, cap: (c.capital && c.capital[0]) || '—',
     b: (c.borders || []).map(x => a3to2[x]).filter(Boolean), a: c.area, ind: !!c.independent
   };
 }

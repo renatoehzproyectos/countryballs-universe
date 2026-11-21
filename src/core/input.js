@@ -1,10 +1,10 @@
 /** Unified movement input: keyboard (WASD/arrows) + virtual joystick. */
 const keys = new Set();
-addEventListener('keydown', e => keys.add(e.code));
+addEventListener('keydown', e => { keys.add(e.code); if (e.code === 'Space') { input.jump = true; e.preventDefault(); } });
 addEventListener('keyup', e => keys.delete(e.code));
 addEventListener('blur', () => keys.clear());
 export const input = {
-  joy: { x: 0, y: 0 },
+  joy: { x: 0, y: 0 }, jump: false,
   /** x: right, y: down (screen space), length <= 1 */
   axis() {
     let x = this.joy.x, y = this.joy.y;

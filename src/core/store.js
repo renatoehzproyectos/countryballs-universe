@@ -19,6 +19,7 @@ const defaults = () => ({
   evolution: { level: 1, xp: 0, rebirths: 0, world: 'europe', worldsUnlocked: ['europe'], pets: [], equippedPets: [], bossesKilled: {}, quests: {} },
   quiz: { mastered: {}, wrong: [], records: {}, daily: { date: '', score: 0 } },
   conquest: { campaign: null, wins: 0 },
+  daily: { last: '', streak: 0 },
   settings: { sound: true }
 });
 

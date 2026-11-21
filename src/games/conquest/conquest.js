@@ -8,7 +8,7 @@ import { EMPIRES, EMPIRE_REQ } from '../../data/empires.js';
 import * as S from './sim.js';
 
 const PERS_ICON = { aggressive: '🔥', opportunist: '🦊', diplomatic: '🕊️', merchant: '💰', isolationist: '🏝️' };
-const KIND = { 'alliance-def': 'Defensive alliance', 'alliance-mil': 'Military alliance', trade: 'Trade agreement', nap: 'Non-aggression pact', vassal: 'Vassalage', peace: 'Peace' };
+const KIND = { 'alliance-def': 'Alianza defensiva', 'alliance-mil': 'Alianza militar', trade: 'Acuerdo comercial', nap: 'Pacto de no agresión', vassal: 'Protectorado', peace: 'Paz' };
 
 /** Game Two — World Conquest. UI layer over sim.js; the campaign is autosaved in the shared profile. */
 export default class Conquest {
@@ -29,24 +29,24 @@ export default class Conquest {
   #menu() {
     const c = store.state.conquest.campaign, pn = c.nations[c.player];
     this.setupState = S.newCampaign('PL'); this.#paintAll(this.setupState, true);
-    const m = modal('🗺️ World Conquest', [h('p.mute', 'A campaign is in progress.'), h('div.row', { style: { marginBottom: '10px' } }, ballAvatar(pn.flag, 50), h('div', h('b', pn.name), h('div.mute', `Month ${c.turn} · ${pn.regs.length} regions`))),
-      h('button.btn.green', { style: { width: '100%', marginBottom: '8px' }, onclick: () => { this.s = c; m.close(); this.#play(); } }, '▶ Continue campaign'),
-      h('button.btn.red', { style: { width: '100%' }, onclick: () => confirmBox('Abandon campaign?', 'Your current campaign will be lost.', () => { store.mutate(st => { st.conquest.campaign = null; }); m.close(); }) }, 'New campaign')], { onClose: () => { if (!this.s) this.#setup(); } });
+    const m = modal('🗺️ Conquista Mundial', [h('p.mute', 'Tienes una partida empezada.'), h('div.row', { style: { marginBottom: '10px' } }, ballAvatar(pn.flag, 50), h('div', h('b', pn.name), h('div.mute', `Mes ${c.turn} · ${pn.regs.length} territorios`))),
+      h('button.btn.green', { style: { width: '100%', marginBottom: '8px' }, onclick: () => { this.s = c; m.close(); this.#play(); } }, '▶ Seguir jugando'),
+      h('button.btn.red', { style: { width: '100%' }, onclick: () => confirmBox('¿Empezar de nuevo?', 'Se perderá la partida actual.', () => { store.mutate(st => { st.conquest.campaign = null; }); m.close(); }) }, 'Partida nueva')], { onClose: () => { if (!this.s) this.#setup(); } });
   }
 
   #setup() {
     this.s = null; this.setupState = S.newCampaign('PL'); this.#paintAll(this.setupState, true);
     const own = store.state.ownedEmpires;
-    this.hud.replaceChildren(h('div.hud-top', { style: { left: '64px' } }, h('div.chip', '🗺️ Choose your nation — tap any country')),
+    this.hud.replaceChildren(h('div.hud-top', { style: { left: '64px' } }, h('div.chip', '🗺️ Elige tu país: toca uno en el mapa')),
       h('div', { style: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: '8px 8px calc(8px + env(safe-area-inset-bottom))', background: 'linear-gradient(transparent,#000a)', display: this.sel ? 'none' : 'block' }, },
-        h('div.mute', { style: { fontSize: '12px', margin: '0 4px 4px' } }, '👑 Historical empires'),
+        h('div.mute', { style: { fontSize: '12px', margin: '0 4px 4px' } }, '👑 Imperios históricos'),
         h('div', { style: { display: 'flex', gap: '8px', overflowX: 'auto', touchAction: 'pan-x' } }, Object.values(EMPIRES).map(e => { const ok = own.includes(e.id);
-          return h('button.card', { style: { minWidth: '112px', color: 'inherit', opacity: ok ? 1 : 0.6, cursor: 'pointer' }, onclick: () => ok ? this.#empireInfo(e) : toast('🔒 ' + EMPIRE_REQ[e.id] + ' (Guess the Flag)', 'bad') }, ballAvatar(e.flag, 40, !ok), h('div.nm', e.name), h('div.mute', { style: { fontSize: '10px' } }, ok ? 'Unlocked' : '🔒 Locked')); }))));
+          return h('button.card', { style: { minWidth: '112px', color: 'inherit', opacity: ok ? 1 : 0.6, cursor: 'pointer' }, onclick: () => ok ? this.#empireInfo(e) : toast('🔒 ' + EMPIRE_REQ[e.id] + ' (Adivina la bandera)', 'bad') }, ballAvatar(e.flag, 40, !ok), h('div.nm', e.name), h('div.mute', { style: { fontSize: '10px' } }, ok ? '¡Tuyo!' : '🔒 Bloqueado')); }))));
     this.setupMode = true;
   }
   #empireInfo(e) {
-    const m = modal(e.name, h('div', h('div.center', ballAvatar(e.flag, 90)), h('p', e.blurb), h('div.kv', h('span.mute', 'Starting regions'), h('b', e.regions.length), h('span.mute', 'Income'), h('b', '×' + e.mods.income), h('span.mute', 'Army'), h('b', '×' + e.mods.troops), h('span.mute', 'Equipment'), h('b', '×' + e.mods.equipment)),
-      h('div', { style: { height: '10px' } }), h('button.btn.gold', { style: { width: '100%' }, onclick: () => { m.close(); this.#begin(e.id); } }, `Play as ${e.name}`)));
+    const m = modal(e.name, h('div', h('div.center', ballAvatar(e.flag, 90)), h('p', e.blurb), h('div.kv', h('span.mute', 'Territorios al empezar'), h('b', e.regions.length), h('span.mute', 'Dinero'), h('b', '×' + e.mods.income), h('span.mute', 'Ejército'), h('b', '×' + e.mods.troops), h('span.mute', 'Equipo'), h('b', '×' + e.mods.equipment)),
+      h('div', { style: { height: '10px' } }), h('button.btn.gold', { style: { width: '100%' }, onclick: () => { m.close(); this.#begin(e.id); } }, `Jugar con ${e.name}`)));
   }
   #begin(id) { this.s = S.newCampaign(id); S.startPlayerTurn(this.s); store.mutate(st => { st.conquest.campaign = this.s; }); this.sel = null; this.setupMode = false; this.#play(); this.map.focus(this.s.nations[id].cap, 0.35); }
 
@@ -56,14 +56,14 @@ export default class Conquest {
 
   #buildHud() {
     this.elStats = h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } }); this.badge = h('span', { style: { background: '#ff4d4d', borderRadius: '9px', padding: '0 6px', marginLeft: '4px', fontSize: '11px' } });
-    this.endBtn = h('button.btn.gold', { style: { position: 'absolute', right: '12px', bottom: 'calc(14px + env(safe-area-inset-bottom))', fontSize: '18px', padding: '14px 20px', zIndex: 4 }, onclick: () => this.#endTurn() }, '⏭ End Turn');
+    this.endBtn = h('button.btn.gold', { style: { position: 'absolute', right: '12px', bottom: 'calc(14px + env(safe-area-inset-bottom))', fontSize: '18px', padding: '14px 20px', zIndex: 4 }, onclick: () => this.#endTurn() }, '⏭ Pasar mes');
     this.hud.replaceChildren(h('div.hud-top', { style: { left: '64px', alignItems: 'flex-start' } }, this.elStats, h('div.grow'), h('div', { style: { display: 'grid', gap: '6px' } },
       h('button.btn.sm', { onclick: () => this.#inbox() }, '🔔', this.badge), h('button.btn.sm', { onclick: () => this.#logModal() }, '📜'), h('button.btn.sm', { onclick: () => this.#menuModal() }, '☰'))), this.endBtn);
     this.#refreshHud();
   }
   #refreshHud() {
     const s = this.s, n = this.me, net = S.netIncome(s, n); if (!this.elStats) return;
-    this.elStats.replaceChildren(...[`📅 Month ${s.turn}`, `🪙 ${fmt(n.treasury)} (${net >= 0 ? '+' : ''}${fmt(net)})`, `🪖 ${fmt(n.troops)}k`, `⚙️ ${fmt(n.equip)}`, `🌍 ${(S.empireShare(s) * 100).toFixed(1)}%`, `⚔ ${n.atk}`].map(t => h('span.chip', { style: { padding: '3px 9px', fontSize: '13px', color: t.startsWith('🪙') && net < 0 ? 'var(--bad)' : '' } }, t)));
+    this.elStats.replaceChildren(...[`📅 Mes ${s.turn}`, `🪙 ${fmt(n.treasury)} (${net >= 0 ? '+' : ''}${fmt(net)})`, `🪖 ${fmt(n.troops)}k`, `⚙️ ${fmt(n.equip)}`, `🌍 ${(S.empireShare(s) * 100).toFixed(1)}%`, `⚔ ${n.atk}`].map(t => h('span.chip', { style: { padding: '3px 9px', fontSize: '13px', color: t.startsWith('🪙') && net < 0 ? 'var(--bad)' : '' } }, t)));
     this.badge.textContent = s.proposals.length || ''; this.badge.style.display = s.proposals.length ? 'inline' : 'none';
   }
 
@@ -85,11 +85,11 @@ export default class Conquest {
     const s = this.s ?? this.setupState, reg = s.regions[id], n = s.nations[reg.owner], play = !!this.s, me = play ? this.me : null;
     const m = meta[n.cap] ?? meta[id], pop = S.popOf(s, n), gdp = S.gdpOf(s, n), r = play && n.id !== me.id ? S.rel(s, me.id, n.id) : 0;
     const chips = [];
-    if (play && n.id !== me.id) { if (S.atWar(s, me.id, n.id)) chips.push('⚔ At war'); if (S.isAllied(s, me.id, n.id)) chips.push('🤝 Allied'); if (S.pactOf(s, me.id, n.id, 'trade')) chips.push('💱 Trade'); if (S.pactOf(s, me.id, n.id, 'nap')) chips.push('🕊 NAP'); if (n.overlord === me.id) chips.push(n.vtype === 'puppet' ? '🎭 Puppet' : '👑 Vassal'); if (n.overlord && n.overlord !== me.id) chips.push('Vassal of ' + s.nations[n.overlord].name); }
-    const body = [h('div.row', ballAvatar(n.flag, 54), h('div.grow', h('div', { style: { fontSize: '18px', fontWeight: 800 } }, n.name), h('div.mute', { style: { fontSize: '12px' } }, `Capital ${meta[n.cap]?.cap ?? '—'}${reg.owner !== id ? ` · tapped ${S.NAME(id)}` : ''}`)), h('button.btn.sm', { onclick: () => { this.sel = null; this.sheet.style.display = 'none'; this.#paintAll(s, !play); } }, '✕')),
+    if (play && n.id !== me.id) { if (S.atWar(s, me.id, n.id)) chips.push('⚔ En batalla'); if (S.isAllied(s, me.id, n.id)) chips.push('🤝 Aliado'); if (S.pactOf(s, me.id, n.id, 'trade')) chips.push('💱 Comercio'); if (S.pactOf(s, me.id, n.id, 'nap')) chips.push('🕊 No agresión'); if (n.overlord === me.id) chips.push(n.vtype === 'puppet' ? '🎭 Gobierno amigo' : '👑 Protegido'); if (n.overlord && n.overlord !== me.id) chips.push('Protegido de ' + s.nations[n.overlord].name); }
+    const body = [h('div.row', ballAvatar(n.flag, 54), h('div.grow', h('div', { style: { fontSize: '18px', fontWeight: 800 } }, n.name), h('div.mute', { style: { fontSize: '12px' } }, `Capital ${meta[n.cap]?.cap ?? '—'}${reg.owner !== id ? ` · tocaste ${S.NAME(id)}` : ''}`)), h('button.btn.sm', { onclick: () => { this.sel = null; this.sheet.style.display = 'none'; this.#paintAll(s, !play); } }, '✕')),
       chips.length ? h('div.pill-list', { style: { margin: '6px 0' } }, chips.map(c => h('span.chip', { style: { padding: '2px 9px', fontSize: '12px' } }, c))) : null,
-      h('div.kv', { style: { fontSize: '13px', margin: '8px 0' } }, ...Object.entries({ 'Population': pop.toFixed(1) + 'M', 'Economy (GDP)': '$' + fmt(gdp) + 'B', 'Military': `${fmt(n.troops)}k troops · ⚙${fmt(n.equip)}`, 'Strength': fmt(S.strength(n)), 'Territory': `${n.regs.length} regions · ${S.cities(s, n)} cities · ${S.factories(s, n)} factories`, 'Treasury': play && n.id !== me.id ? '≈' + fmt(Math.round(n.treasury / 10) * 10) : fmt(n.treasury), 'Income': (S.netIncome(s, n) >= 0 ? '+' : '') + fmt(S.netIncome(s, n)) + '/mo', ...(play && n.id !== me.id ? { 'Personality': `${PERS_ICON[n.pers]} ${S.persOf(n).label}`, 'Relations': `${r > 0 ? '+' : ''}${r}`, 'Reputation': Math.round(n.rep) } : {}) }).flatMap(([k, v]) => [h('span.mute', k), h('b', v)]))];
-    if (!play) { body.push(h('button.btn.gold', { style: { width: '100%' }, onclick: () => this.#begin(reg.owner) }, `▶ Play as ${n.name}`)); }
+      h('div.kv', { style: { fontSize: '13px', margin: '8px 0' } }, ...Object.entries({ 'Gente': pop.toFixed(1) + 'M', 'Economía': '$' + fmt(gdp) + 'B', 'Ejército': `${fmt(n.troops)}k soldados · ⚙${fmt(n.equip)}`, 'Fuerza': fmt(S.strength(n)), 'Territorio': `${n.regs.length} zonas · ${S.cities(s, n)} ciudades · ${S.factories(s, n)} fábricas`, 'Tesoro': play && n.id !== me.id ? '≈' + fmt(Math.round(n.treasury / 10) * 10) : fmt(n.treasury), 'Ganancia': (S.netIncome(s, n) >= 0 ? '+' : '') + fmt(S.netIncome(s, n)) + '/mes', ...(play && n.id !== me.id ? { 'Carácter': `${PERS_ICON[n.pers]} ${S.persOf(n).label}`, 'Amistad': `${r > 0 ? '+' : ''}${r}`, 'Fama': Math.round(n.rep) } : {}) }).flatMap(([k, v]) => [h('span.mute', k), h('b', v)]))];
+    if (!play) { body.push(h('button.btn.gold', { style: { width: '100%' }, onclick: () => this.#begin(reg.owner) }, `▶ Jugar con ${n.name}`)); }
     else if (n.id === me.id) body.push(...this.#ownActions(id));
     else body.push(...this.#diplomacy(n, id));
     this.sheet.replaceChildren(...body); this.sheet.style.display = 'block';
@@ -101,63 +101,63 @@ export default class Conquest {
 
   #ownActions(id) {
     const s = this.s, r = s.regions[id], n = this.me, step = Math.max(2, Math.round(n.troops * 0.1));
-    return [this.#group(`🏗 Develop ${S.NAME(id)}`, this.#btn(`🏙 City (${S.costs.city(r)})`, () => this.#act(s => S.build(s, n.id, id, 'city'))), this.#btn(`🏭 Factory (${S.costs.factory(r)})`, () => this.#act(s => S.build(s, n.id, id, 'factory'))), this.#btn(`🛣 Infra ${r.infra}/5 (${S.costs.infra(r)})`, () => this.#act(s => S.build(s, n.id, id, 'infra')))),
-      h('div.mute', { style: { fontSize: '11px', margin: '4px 0' } }, `${r.cities} cities · ${r.fact} factories · cities give income, factories make equipment, armies cost upkeep.`),
-      this.#group('🪖 Military', this.#btn(`Recruit +${step}k (${Math.round(step * 1.5)}🪙 ${Math.round(step * 0.5)}⚙)`, () => this.#act(s => S.recruit(s, n.id)), '.green')),
-      S.alive(s).some(v => v.overlord === n.id) ? this.#group('👑 Dependents', ...S.alive(s).filter(v => v.overlord === n.id).map(v => this.#btn(v.name, () => this.#tap(v.regs[0])))) : null];
+    return [this.#group(`🏗 Construir en ${S.NAME(id)}`, this.#btn(`🏙 Ciudad (${S.costs.city(r)})`, () => this.#act(s => S.build(s, n.id, id, 'city'))), this.#btn(`🏭 Fábrica (${S.costs.factory(r)})`, () => this.#act(s => S.build(s, n.id, id, 'factory'))), this.#btn(`🛣 Caminos ${r.infra}/5 (${S.costs.infra(r)})`, () => this.#act(s => S.build(s, n.id, id, 'infra')))),
+      h('div.mute', { style: { fontSize: '11px', margin: '4px 0' } }, `${r.cities} ciudades · ${r.fact} fábricas · las ciudades dan dinero, las fábricas hacen equipo y el ejército cuesta dinero.`),
+      this.#group('🪖 Ejército', this.#btn(`Reclutar +${step}k (${Math.round(step * 1.5)}🪙 ${Math.round(step * 0.5)}⚙)`, () => this.#act(s => S.recruit(s, n.id)), '.green')),
+      S.alive(s).some(v => v.overlord === n.id) ? this.#group('👑 Protegidos', ...S.alive(s).filter(v => v.overlord === n.id).map(v => this.#btn(v.name, () => this.#tap(v.regs[0])))) : null];
   }
 
   #diplomacy(n, rid) {
     const s = this.s, me = this.me, war = S.atWar(s, me.id, n.id), ally = S.pactOf(s, me.id, n.id, 'alliance'), trade = S.pactOf(s, me.id, n.id, 'trade'), nap = S.pactOf(s, me.id, n.id, 'nap'), mine = n.overlord === me.id;
-    const ask = kind => this.#act(s => { const r = S.propose(s, me.id, n.id, kind); if (r.ok) sfx.treaty(); return { ok: r.ok, msg: r.ok ? `${n.name} accepted the ${KIND[kind].toLowerCase()}!` : `${n.name}: “${r.msg}”` }; });
+    const ask = kind => this.#act(s => { const r = S.propose(s, me.id, n.id, kind); if (r.ok) sfx.treaty(); return { ok: r.ok, msg: r.ok ? `¡${n.name} aceptó: ${KIND[kind].toLowerCase()}!` : `${n.name}: “${r.msg}”` }; });
     const out = [];
-    if (mine) return [this.#group('👑 Dependent state', this.#btn(n.vtype === 'puppet' ? 'Already a puppet' : 'Install puppet government', () => this.#act(s => { S.makePuppet(s, n.id); return { ok: true, msg: 'Puppet government installed (−8 reputation).' }; }), '', n.vtype === 'puppet'), this.#btn('Release', () => this.#act(s => { S.release(s, n.id); return { ok: true, msg: 'Released.' }; })))];
+    if (mine) return [this.#group('👑 País protegido', this.#btn(n.vtype === 'puppet' ? 'Ya te obedece' : 'Ayudar a gobernar', () => this.#act(s => { S.makePuppet(s, n.id); return { ok: true, msg: 'Gobierno amigo instalado (−8 fama).' }; }), '', n.vtype === 'puppet'), this.#btn('Dar libertad', () => this.#act(s => { S.release(s, n.id); return { ok: true, msg: 'Released.' }; })))];
     if (!war) {
-      out.push(this.#group('🤝 Alliance', ally ? [this.#btn('Request aid', () => this.#act(s => S.requestAid(s, me.id, n.id))), this.#btn('Gift 50🪙', () => this.#act(s => ({ ok: S.gift(s, me.id, n.id, 50), msg: 'Gift sent. Relations improve.' }))), this.#btn('Break alliance', () => confirmBox('Break alliance?', 'Betraying an ally costs −30 reputation and angers other nations.', () => this.#act(s => { S.breakPact(s, ally, me.id); return { ok: true, msg: 'Alliance broken.' }; })), '.red')]
-        : [this.#btn('Defensive', () => ask('alliance-def')), this.#btn('Military', () => ask('alliance-mil'))]));
-      out.push(this.#group('💱 Trade', trade ? [this.#btn('Buy 10⚙ (30🪙)', () => this.#act(s => S.buyEquipment(s, me.id, n.id, 10))), this.#btn('Cancel', () => this.#act(s => { S.breakPact(s, trade, me.id); return { ok: true, msg: 'Agreement cancelled.' }; }))] : [this.#btn('Trade agreement', () => ask('trade'))]));
-      out.push(this.#group('🕊 Treaties', nap ? h('span.mute', { style: { fontSize: '12px' } }, `Non-aggression pact until month ${nap.until}`) : this.#btn('Non-aggression pact', () => ask('nap')), !n.overlord ? this.#btn('Offer vassalage', () => ask('vassal')) : null));
+      out.push(this.#group('🤝 Alianza', ally ? [this.#btn('Pedir ayuda', () => this.#act(s => S.requestAid(s, me.id, n.id))), this.#btn('Regalar 50🪙', () => this.#act(s => ({ ok: S.gift(s, me.id, n.id, 50), msg: '¡Regalo enviado! Sois más amigos.' }))), this.#btn('Romper alianza', () => confirmBox('¿Romper la alianza?', 'Traicionar a un amigo baja mucho tu fama y enfada a otros países.', () => this.#act(s => { S.breakPact(s, ally, me.id); return { ok: true, msg: 'Alianza rota.' }; })), '.red')]
+        : [this.#btn('Defensiva', () => ask('alliance-def')), this.#btn('Militar', () => ask('alliance-mil'))]));
+      out.push(this.#group('💱 Comercio', trade ? [this.#btn('Comprar 10⚙ (30🪙)', () => this.#act(s => S.buyEquipment(s, me.id, n.id, 10))), this.#btn('Cancelar', () => this.#act(s => { S.breakPact(s, trade, me.id); return { ok: true, msg: 'Acuerdo cancelado.' }; }))] : [this.#btn('Acuerdo comercial', () => ask('trade'))]));
+      out.push(this.#group('🕊 Tratados', nap ? h('span.mute', { style: { fontSize: '12px' } }, `Pacto de no agresión hasta el mes ${nap.until}`) : this.#btn('Pacto de no agresión', () => ask('nap')), !n.overlord ? this.#btn('Ofrecer protección', () => ask('vassal')) : null));
     } else {
       const border = S.borderRegions(s, me.id, n.id).includes(rid);
-      out.push(this.#group(`⚔ War (score ${S.warScore(s, me.id, n.id)})`, this.#btn(`Attack ${S.NAME(rid)}`, () => this.#attackModal(rid), '.red', !border || me.atk <= 0), this.#btn('Peace talks', () => this.#peaceModal(n))), h('div.mute', { style: { fontSize: '11px' } }, border ? `Attack orders left: ${me.atk}` : 'Only regions on your front line can be attacked.'));
+      out.push(this.#group(`⚔ Batalla (puntos ${S.warScore(s, me.id, n.id)})`, this.#btn(`Atacar ${S.NAME(rid)}`, () => this.#attackModal(rid), '.red', !border || me.atk <= 0), this.#btn('Hacer las paces', () => this.#peaceModal(n))), h('div.mute', { style: { fontSize: '11px' } }, border ? `Ataques que te quedan: ${me.atk}` : 'Solo puedes atacar zonas que toquen tu frontera.'));
     }
-    if (!war) out.push(this.#group('⚔ War', this.#btn('Declare war', () => { const pact = S.pactOf(s, me.id, n.id); const go = () => this.#act(s => { const r = S.declareWar(s, me.id, n.id); return { ok: r.ok, msg: r.ok ? `War declared on ${n.name}!` : r.msg }; }); pact ? confirmBox('Break treaty?', 'Declaring war on a treaty partner is betrayal (−20 to −30 reputation).', go) : go(); }, '.red')));
+    if (!war) out.push(this.#group('⚔ Batalla', this.#btn('Desafiar a batalla', () => { const pact = S.pactOf(s, me.id, n.id); const go = () => this.#act(s => { const r = S.declareWar(s, me.id, n.id); return { ok: r.ok, msg: r.ok ? `¡Desafiaste a ${n.name}!` : r.msg }; }); pact ? confirmBox('¿Romper el tratado?', 'Atacar a un amigo es una traición y baja mucho tu fama.', go) : go(); }, '.red')));
     return out;
   }
 
   #attackModal(rid) {
-    const m = modal('⚔ Attack ' + S.NAME(rid), h('div', h('p', 'Commit how much of your army?'), h('div.row', [0.25, 0.5, 1].map(f => h('button.btn.red.grow', { onclick: () => { m.close(); const owner = this.s.regions[rid].owner; const out = S.attack(this.s, this.me.id, rid, f); if (out.win) { sfx.boom(); this.#flash(rid, '💥'); store.mutate(st => { st.stats.conquests++; }); addProfileXp(10); checkAchievements(); } else this.#flash(rid, '✖'); this.#act(() => out); this.#showRegion(rid); } }, `${f * 100}%`)))));
+    const m = modal('⚔ Atacar ' + S.NAME(rid), h('div', h('p', '¿Cuánto ejército envías?'), h('div.row', [0.25, 0.5, 1].map(f => h('button.btn.red.grow', { onclick: () => { m.close(); const owner = this.s.regions[rid].owner; const out = S.attack(this.s, this.me.id, rid, f); if (out.win) { sfx.boom(); this.#flash(rid, '💥'); store.mutate(st => { st.stats.conquests++; }); addProfileXp(10); checkAchievements(); } else this.#flash(rid, '✖'); this.#act(() => out); this.#showRegion(rid); } }, `${f * 100}%`)))));
   }
   #peaceModal(n) {
-    const s = this.s, me = this.me, sc = S.warScore(s, me.id, n.id), deals = [['white', '🕊 White peace', 'End the war, keep borders'], ['reparations', '💰 Reparations', 'They pay 40% of their treasury'], ['vassal', '👑 Vassalize', 'They become your tributary'], ['puppet', '🎭 Puppet', 'Total control (needs total victory)'], ['concede', '🏳 Buy peace (60🪙)', 'Pay them to stop']];
-    const m = modal(`Peace with ${n.name}`, [h('p.mute', `War score ${sc}. They will accept if they are desperate enough.`), ...deals.map(([k, t, d]) => h('button.btn', { style: { width: '100%', marginBottom: '6px', textAlign: 'left' }, onclick: () => { const r = S.peaceDecision(s, me.id, n.id, k); if (r.ok) { if (k !== 'white' && sc > 0) store.mutate(st => { st.stats.warsWon++; }); S.applyPeace(s, me.id, n.id, k); sfx.treaty(); m.close(); this.#act(() => ({ ok: true, msg: 'Treaty signed!' })); } else toast(`${n.name}: “${r.msg}”`, 'bad'); } }, h('div', { style: { fontWeight: 800 } }, t), h('div.mute', { style: { fontSize: '12px' } }, d)))]);
+    const s = this.s, me = this.me, sc = S.warScore(s, me.id, n.id), deals = [['white', '🕊 Paz sin premios', 'Se acaba la batalla y todo queda igual'], ['reparations', '💰 Regalo de paz', 'Te dan el 40 % de su tesoro'], ['vassal', '👑 Protegerlo', 'Te ayuda con parte de su dinero'], ['puppet', '🎭 Gobierno amigo', 'Mandas tú (hay que ganar mucho)'], ['concede', '🏳 Comprar la paz (60🪙)', 'Les das monedas para parar']];
+    const m = modal(`Paces con ${n.name}`, [h('p.mute', `Puntos ${sc}. Aceptan si ya están cansados de batallar.`), ...deals.map(([k, t, d]) => h('button.btn', { style: { width: '100%', marginBottom: '6px', textAlign: 'left' }, onclick: () => { const r = S.peaceDecision(s, me.id, n.id, k); if (r.ok) { if (k !== 'white' && sc > 0) store.mutate(st => { st.stats.warsWon++; }); S.applyPeace(s, me.id, n.id, k); sfx.treaty(); m.close(); this.#act(() => ({ ok: true, msg: '¡Tratado firmado!' })); } else toast(`${n.name}: “${r.msg}”`, 'bad'); } }, h('div', { style: { fontWeight: 800 } }, t), h('div.mute', { style: { fontSize: '12px' } }, d)))]);
   }
 
   #inbox() {
-    const s = this.s, m = modal('🔔 Diplomatic inbox', ''); const render = () => m.body.replaceChildren(...(s.proposals.length ? s.proposals.map(p => { const f = s.nations[p.from];
-      const label = p.kind === 'peace' ? (p.demand ? `${f.name} demands: ${p.deal}` : `${f.name} offers white peace`) : `${f.name} proposes: ${KIND[p.kind]}`;
-      return h('div.card', { style: { flexDirection: 'row', textAlign: 'left', marginBottom: '8px' } }, ballAvatar(f.flag, 40), h('div.grow', label), h('button.btn.green.sm', { onclick: () => { this.#accept(p); render(); } }, '✔'), h('button.btn.red.sm', { onclick: () => { s.proposals.splice(s.proposals.indexOf(p), 1); this.#refreshHud(); render(); } }, '✖')); }) : [h('p.mute', 'No pending proposals.')])); render();
+    const s = this.s, m = modal('🔔 Mensajes', ''); const render = () => m.body.replaceChildren(...(s.proposals.length ? s.proposals.map(p => { const f = s.nations[p.from];
+      const label = p.kind === 'peace' ? (p.demand ? `${f.name} pide: ${p.deal}` : `${f.name} quiere hacer las paces`) : `${f.name} propone: ${KIND[p.kind]}`;
+      return h('div.card', { style: { flexDirection: 'row', textAlign: 'left', marginBottom: '8px' } }, ballAvatar(f.flag, 40), h('div.grow', label), h('button.btn.green.sm', { onclick: () => { this.#accept(p); render(); } }, '✔'), h('button.btn.red.sm', { onclick: () => { s.proposals.splice(s.proposals.indexOf(p), 1); this.#refreshHud(); render(); } }, '✖')); }) : [h('p.mute', 'No hay mensajes.')])); render();
   }
   #accept(p) {
     const s = this.s; s.proposals.splice(s.proposals.indexOf(p), 1);
     if (p.kind === 'peace') { if (S.atWar(s, p.from, s.player)) S.applyPeace(s, p.from, s.player, p.deal); } else if (!S.atWar(s, p.from, s.player)) S.sign(s, p.from, s.player, p.kind);
-    sfx.treaty(); this.#act(() => ({ ok: true, msg: 'Accepted.' }));
+    sfx.treaty(); this.#act(() => ({ ok: true, msg: '¡Aceptado!' }));
   }
-  #logModal() { modal('📜 Chronicle', this.s.log.slice(0, 40).map(l => h('div', { style: { padding: '4px 0', borderBottom: '1px solid #fff1', color: l.tone === 'bad' ? 'var(--bad)' : l.tone === 'good' ? 'var(--good)' : '' } }, h('span.mute', `M${l.t} `), l.text))); }
+  #logModal() { modal('📜 Historia', this.s.log.slice(0, 40).map(l => h('div', { style: { padding: '4px 0', borderBottom: '1px solid #fff1', color: l.tone === 'bad' ? 'var(--bad)' : l.tone === 'good' ? 'var(--good)' : '' } }, h('span.mute', `M${l.t} `), l.text))); }
   #menuModal() {
-    const s = this.s, m = modal('☰ Campaign', [h('div.kv', h('span.mute', 'Month'), h('b', s.turn), h('span.mute', 'World controlled'), h('b', (S.empireShare(s) * 100).toFixed(1) + '% (win at 50%)'), h('span.mute', 'Reputation'), h('b', Math.round(this.me.rep)), h('span.mute', 'Active wars'), h('b', S.enemiesOf(s, s.player).length)),
-      h('div', { style: { height: '10px' } }), h('button.btn', { style: { width: '100%', marginBottom: '8px' }, onclick: () => { this.map.reset(); m.close(); } }, '🌍 Reset map view'), h('button.btn.red', { style: { width: '100%' }, onclick: () => confirmBox('Abandon?', 'Delete this campaign?', () => { m.close(); store.mutate(st => { st.conquest.campaign = null; }); this.s = null; this.#setup(); }) }, 'Abandon campaign')]);
+    const s = this.s, m = modal('☰ Partida', [h('div.kv', h('span.mute', 'Mes'), h('b', s.turn), h('span.mute', 'Mundo que controlas'), h('b', (S.empireShare(s) * 100).toFixed(1) + '% (¡ganas con 50 %!)'), h('span.mute', 'Fama'), h('b', Math.round(this.me.rep)), h('span.mute', 'Batallas'), h('b', S.enemiesOf(s, s.player).length)),
+      h('div', { style: { height: '10px' } }), h('button.btn', { style: { width: '100%', marginBottom: '8px' }, onclick: () => { this.map.reset(); m.close(); } }, '🌍 Ver todo el mapa'), h('button.btn.red', { style: { width: '100%' }, onclick: () => confirmBox('¿Dejarla?', '¿Borrar esta partida?', () => { m.close(); store.mutate(st => { st.conquest.campaign = null; }); this.s = null; this.#setup(); }) }, 'Dejar la partida')]);
   }
 
   #endTurn() {
     const s = this.s, before = this.me.regs.length; S.endTurn(s); S.startPlayerTurn(s); sfx.click();
-    const lost = before - this.me.regs.length; if (lost > 0) toast(`You lost ${lost} region${lost > 1 ? 's' : ''}!`, 'bad'); else if (s.proposals.length) toast('🔔 New diplomatic proposals', 'epic');
+    const lost = before - this.me.regs.length; if (lost > 0) toast(`¡Perdiste ${lost} zona${lost > 1 ? 's' : ''}!`, 'bad'); else if (s.proposals.length) toast('🔔 ¡Mensajes nuevos!', 'epic');
     store.mutate(() => {}); this.#paintAll(s); this.#refreshHud(); if (this.sel) this.#showRegion(this.sel); this.#checkOver();
   }
   #checkOver() {
     const s = this.s; if (!s?.over || this.ended) return; this.ended = true;
     if (s.over === 'win') { store.mutate(st => { st.conquest.wins++; st.conquest.campaign = null; }); addCoins(2000 + s.turn * 5); addProfileXp(300); checkAchievements(); sfx.levelUp(); }
     else store.mutate(st => { st.conquest.campaign = null; });
-    const m = modal(s.over === 'win' ? '🏆 Victory!' : '💀 Defeat', [h('p', s.over === 'win' ? `You rule the world in month ${s.turn}! Reward: 🪙 ${2000 + s.turn * 5}` : 'Your nation has fallen.'), h('button.btn.gold', { style: { width: '100%' }, onclick: () => { m.close(); this.ended = false; this.s = null; this.#setup(); } }, 'New campaign')]);
+    const m = modal(s.over === 'win' ? '🏆 ¡Victoria!' : '😢 Derrota', [h('p', s.over === 'win' ? `¡Gobiernas el mundo en el mes ${s.turn}! Premio: 🪙 ${2000 + s.turn * 5}` : 'Tu país se quedó sin territorio.'), h('button.btn.gold', { style: { width: '100%' }, onclick: () => { m.close(); this.ended = false; this.s = null; this.#setup(); } }, 'Partida nueva')]);
   }
 }

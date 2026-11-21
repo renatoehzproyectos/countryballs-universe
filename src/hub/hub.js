@@ -23,7 +23,7 @@ const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness
 
 /** The 3D home world: plaza, portal to the games, shop, locker and collection monument. */
 export class Hub {
-  constructor(manager) { this.manager = manager; this.scene = new THREE.Scene(); this.interactables = []; this.wanderers = []; this.target = null; this.camYaw = 0; }
+  constructor(manager) { this.manager = manager; this.scene = new THREE.Scene(); this.interactables = []; this.wanderers = []; this.target = null; this.camYaw = 0; this.jy = 0; this.vy = 0; this.spin = 0; }
 
   async mount() {
     const sc = this.scene;
@@ -39,7 +39,7 @@ export class Hub {
     this.#spawnCrowd(); this.#bindInput(); this.#buildHud();
     this.off = bus.on('ball-changed', () => this.#refreshPlayer());
     this.offChange = bus.on('change', () => this.#updateHud());
-    this.#updateHud();
+    this.#updateHud(); this.#dailyReward();
   }
 
   #refreshPlayer() {
@@ -87,22 +87,22 @@ export class Hub {
     const ring = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.32, 10, 40), gold); ring.position.y = 3.2; portal.add(ring);
     for (const x of [-2.6, 2.6]) { const pil = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.5, 3.2, 8), std('#e8e2d0')); pil.position.set(x, 1.6, 0); portal.add(pil); }
     this.swirl = new THREE.Mesh(new THREE.CircleGeometry(2.4, 32), new THREE.MeshBasicMaterial({ map: this.#swirlTex(), transparent: true, side: THREE.DoubleSide })); this.swirl.position.y = 3.2; portal.add(this.swirl);
-    this.#addInteractable('Games', portal, new THREE.Vector3(0, 0, -10), 4, () => this.openGames(), '▶ GAMES', '#ffc933');
+    this.#addInteractable('Juegos', portal, new THREE.Vector3(0, 0, -10), 4, () => this.openGames(), '▶ JUEGOS', '#ffc933');
     // Shop stall
     const shop = new THREE.Group();
     const counter = new THREE.Mesh(new THREE.BoxGeometry(4, 1.2, 1.6), std('#a8693a')); counter.position.y = 0.6; shop.add(counter);
     const awning = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.2, 2.6), std('#e23b3b')); awning.position.y = 3.2; shop.add(awning);
     for (const x of [-2, 2]) { const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 3.2, 6), std('#fff')); pole.position.set(x, 1.6, 0.9); shop.add(pole); }
-    shop.rotation.y = 0.6; this.#addInteractable('Shop', shop, new THREE.Vector3(-10, 0, -2), 3.5, () => openShop(), '🛒 SHOP', '#ff9a9a');
+    shop.rotation.y = 0.6; this.#addInteractable('Tienda', shop, new THREE.Vector3(-10, 0, -2), 3.5, () => openShop(), '🛒 TIENDA', '#ff9a9a');
     // Locker / wardrobe
     const lock = new THREE.Group();
     for (let i = 0; i < 3; i++) { const l = new THREE.Mesh(new THREE.BoxGeometry(1.2, 3, 1.2), std(['#4aa3ff', '#7dc4ff', '#3a86d9'][i])); l.position.set((i - 1) * 1.25, 1.5, 0); lock.add(l); }
-    lock.rotation.y = -0.6; this.#addInteractable('Locker', lock, new THREE.Vector3(10, 0, -2), 3.5, () => openInventory(), '🎒 LOCKER', '#9fd0ff');
+    lock.rotation.y = -0.6; this.#addInteractable('Armario', lock, new THREE.Vector3(10, 0, -2), 3.5, () => openInventory(), '🎒 ARMARIO', '#9fd0ff');
     // Collection monument
     const mon = new THREE.Group();
     const base = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.7, 1, 8), std('#e8e2d0')); base.position.y = 0.5; mon.add(base);
     this.book = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.25, 1.2), std('#7a3bd1')); this.book.position.y = 1.6; mon.add(this.book);
-    this.#addInteractable('Collection', mon, new THREE.Vector3(0, 0, 11), 3, () => openCollection(), '📖 COLLECTION', '#d9b3ff');
+    this.#addInteractable('Álbum', mon, new THREE.Vector3(0, 0, 11), 3, () => openCollection(), '📖 ÁLBUM', '#d9b3ff');
   }
 
   #swirlTex() {
@@ -144,20 +144,41 @@ export class Hub {
   #buildHud() {
     this.joyOff = mountJoystick();
     this.hudTop = h('div.hud-top'); this.dock = h('div.dock', { style: { gap: '8px' } },
-      h('button.btn.icon-btn', { onclick: () => openShop() }, '🛒', h('small', 'Shop')),
-      h('button.btn.icon-btn', { onclick: () => openInventory() }, '🎒', h('small', 'Locker')),
-      h('button.btn.gold.play', { onclick: () => this.openGames() }, '▶ PLAY'),
-      h('button.btn.icon-btn', { onclick: () => openCollection() }, '📖', h('small', 'Book')),
-      h('button.btn.icon-btn', { onclick: () => openProfile() }, '👤', h('small', 'Profile')));
+      h('button.btn.icon-btn', { onclick: () => openShop() }, '🛒', h('small', 'Tienda')),
+      h('button.btn.icon-btn', { onclick: () => openInventory() }, '🎒', h('small', 'Armario')),
+      h('button.btn.gold.play', { onclick: () => this.openGames() }, '▶ JUGAR'),
+      h('button.btn.icon-btn', { onclick: () => openCollection() }, '📖', h('small', 'Álbum')),
+      h('button.btn.icon-btn', { onclick: () => openProfile() }, '👤', h('small', 'Perfil')));
     this.prompt = h('button.btn.green.prompt', { style: { display: 'none' }, onclick: () => this.near?.action() });
-    ui().append(this.hudTop, this.dock, this.prompt);
+    this.mission = h('div.chip.mission'); this.jumpBtn = h('button.btn.gold.jump', { onclick: () => { input.jump = true; } }, '🦘');
+    this.emoteBtn = h('button.btn.icon-btn', { style: { position: 'fixed', left: '22px', bottom: 'calc(170px + env(safe-area-inset-bottom))' }, onclick: () => this.#emote() }, '😄');
+    ui().append(this.hudTop, this.dock, this.prompt, this.mission, this.jumpBtn, this.emoteBtn);
+  }
+
+  #emote() { this.spin = 1; this.vy = Math.max(this.vy, 8); sfx.levelUp(); this.player.setHappy(true); setTimeout(() => this.player.setHappy(false), 1500); }
+
+  #missionText() {
+    const s = store.state;
+    if (s.evolution.level < 3) return '🎯 Misión: ¡juega Evolución y llega al nivel 3!';
+    if (s.stats.flagsCorrect < 10) return '🎯 Misión: ¡adivina 10 banderas!';
+    if (!s.ownedCosmetics.length) return '🎯 Misión: ¡compra un sombrero en la tienda!';
+    if (s.ownedEmpires.length < 1) return '🎯 Misión: ¡domina un continente de banderas y gana un imperio!';
+    if (s.stats.conquests < 3) return '🎯 Misión: ¡conquista 3 territorios!';
+    return '🎯 Misión: ¡colecciona todas las Countryballs!';
+  }
+
+  #dailyReward() {
+    const s = store.state, today = new Date().toISOString().slice(0, 10); if (s.daily.last === today) return;
+    const yest = new Date(Date.now() - 864e5).toISOString().slice(0, 10), streak = s.daily.last === yest ? s.daily.streak + 1 : 1, coins = 100 * Math.min(streak, 7), gems = streak % 7 === 0 ? 5 : 1;
+    const m = modal('🎁 ¡Regalo diario!', h('div.center', h('div', { style: { fontSize: '64px' } }, '🎁'), h('p', `¡Día ${streak} seguido!`), h('p', `🪙 ${coins}  💎 ${gems}`), h('p.mute', 'Vuelve mañana para un premio más grande (hasta 7 días).'),
+      h('button.btn.gold', { onclick: () => { store.mutate(x => { x.daily.last = today; x.daily.streak = streak; x.coins += coins; x.gems += gems; x.stats.coinsEarned += coins; }); sfx.levelUp(); m.close(); } }, '¡Recoger!')));
   }
 
   #updateHud() {
-    const s = store.state; if (!this.hudTop) return;
+    const s = store.state; if (!this.hudTop) return; this.mission.textContent = this.#missionText();
     this.hudTop.replaceChildren(
       h('div.chip', { onclick: () => openProfile(), style: { cursor: 'pointer' } }, ballAvatar(BALL_BY_ID[s.selectedBall].flag, 30),
-        h('div', h('div', `Lv ${s.level}`), h('div.bar', { style: { width: '70px' } }, h('i', { style: { width: s.xp / profileXpNeeded(s.level) * 100 + '%' } })))),
+        h('div', h('div', `Nv ${s.level}`), h('div.bar', { style: { width: '70px' } }, h('i', { style: { width: s.xp / profileXpNeeded(s.level) * 100 + '%' } })))),
       h('div.grow'), h('div.chip', '🪙 ' + fmt(s.coins)), h('div.chip', '💎 ' + s.gems));
   }
 
@@ -165,10 +186,10 @@ export class Hub {
     const s = store.state, e = s.evolution;
     const card = (id, emoji, title, desc, stat, color) => h('button.btn', { style: { display: 'flex', gap: '12px', alignItems: 'center', textAlign: 'left', width: '100%', marginBottom: '10px', background: color, padding: '14px' }, onclick: () => { sfx.click(); m.close(); this.manager.launch(id); } },
       h('span', { style: { fontSize: '40px' } }, emoji), h('div.grow', h('div', { style: { fontSize: '18px', fontWeight: 800 } }, title), h('div', { style: { fontWeight: 500, fontSize: '13px', opacity: 0.9 } }, desc), h('div', { style: { fontSize: '12px', marginTop: '3px' } }, stat)));
-    const m = modal('🎮 Choose a game', [
-      card('evolution', '🌍', 'Countryballs Evolution', 'Explore worlds, fight bosses, collect pets and evolve.', `Evo Lv ${e.level} · ${e.rebirths} rebirths`, 'linear-gradient(90deg,#1f8a4c,#2fb36a)'),
-      card('conquest', '🗺️', 'World Conquest', 'Ally, trade and conquer on the world map.', `Empires unlocked ${s.ownedEmpires.length}/5`, 'linear-gradient(90deg,#9a2a2a,#d24a4a)'),
-      card('flagquiz', '🚩', 'Guess the Flag', 'Quiz modes, daily challenges — earn empires!', `Best streak ${s.stats.bestStreak} · ${s.stats.flagsCorrect} correct`, 'linear-gradient(90deg,#2a5fc9,#4a8cff)')]);
+    const m = modal('🎮 ¡Elige un juego!', [
+      card('evolution', '🌍', 'Evolución', 'Explora mundos, vence jefes, colecciona mascotas y evoluciona.', `Nivel ${e.level} · ${e.rebirths} renaceres`, 'linear-gradient(90deg,#1f8a4c,#2fb36a)'),
+      card('conquest', '🗺️', 'Conquista Mundial', 'Haz amigos, comercia y conquista el mapa del mundo.', `Imperios ${s.ownedEmpires.length}/5`, 'linear-gradient(90deg,#9a2a2a,#d24a4a)'),
+      card('flagquiz', '🚩', 'Adivina la bandera', '¡Gana imperios acertando banderas!', `Mejor racha ${s.stats.bestStreak} · ${s.stats.flagsCorrect} aciertos`, 'linear-gradient(90deg,#2a5fc9,#4a8cff)')]);
   }
 
   update(dt, t) {
@@ -181,8 +202,11 @@ export class Hub {
     if (moving) { p.position.addScaledVector(dir, 7 * dt * Math.min(1, dir.length() || 1)); let da = Math.atan2(dir.x, dir.z) - p.rotation.y; da = Math.atan2(Math.sin(da), Math.cos(da)); p.rotation.y += da * Math.min(1, dt * 12); }
     const r = Math.hypot(p.position.x, p.position.z); if (r > 60) p.position.multiplyScalar(60 / r);
     const bounce = moving ? Math.abs(Math.sin(t * 11)) * 0.35 : Math.sin(t * 2) * 0.04;
-    p.position.y = 1 + bounce; this.player.squash(moving ? (0.5 - Math.abs(Math.sin(t * 11))) * 0.12 : Math.sin(t * 2) * 0.02);
-    this.shadow.position.set(p.position.x, 0.2, p.position.z); this.shadow.scale.setScalar(1 - bounce * 0.4);
+    if (input.jump && this.jy <= 0.01) { this.vy = 10; sfx.click(); } input.jump = false;
+    this.vy -= 28 * dt; this.jy = Math.max(0, this.jy + this.vy * dt); if (this.jy === 0) this.vy = 0;
+    if (this.spin > 0) { this.spin -= dt * 1.4; p.rotation.y += dt * 14; }
+    p.position.y = 1 + bounce + this.jy; this.player.squash(moving ? (0.5 - Math.abs(Math.sin(t * 11))) * 0.12 : Math.sin(t * 2) * 0.02);
+    this.shadow.position.set(p.position.x, 0.2, p.position.z); this.shadow.scale.setScalar(Math.max(0.3, 1 - bounce * 0.4 - this.jy * 0.15));
     // camera
     const cd = new THREE.Vector3(Math.sin(this.camYaw) * 10, 6.5, Math.cos(this.camYaw) * 10).add(p.position);
     this.camera.position.lerp(cd, Math.min(1, dt * 5)); this.camera.lookAt(p.position.x, 1.5, p.position.z);
@@ -197,12 +221,12 @@ export class Hub {
     }
     // proximity prompt
     let near = null; for (const i of this.interactables) if (i.pos.distanceTo(p.position) < i.radius + 1) near = i;
-    if (near !== this.near) { this.near = near; this.prompt.style.display = near ? 'block' : 'none'; if (near) this.prompt.textContent = 'Open ' + near.name; }
+    if (near !== this.near) { this.near = near; this.prompt.style.display = near ? 'block' : 'none'; if (near) this.prompt.textContent = 'Abrir ' + near.name; }
   }
 
   unmount() {
     this.unbind?.(); this.joyOff?.(); this.off?.(); this.offChange?.();
-    this.hudTop?.remove(); this.dock?.remove(); this.prompt?.remove();
+    this.hudTop?.remove(); this.dock?.remove(); this.prompt?.remove(); this.mission?.remove(); this.jumpBtn?.remove(); this.emoteBtn?.remove();
     this.player?.dispose(); this.wanderers.forEach(w => w.ball.dispose()); disposeScene(this.scene);
   }
 }
