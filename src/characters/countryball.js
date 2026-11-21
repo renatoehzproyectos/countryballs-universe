@@ -113,7 +113,8 @@ export class Countryball {
         const body = o.children[0];
         body.geometry = body.geometry.clone(); applyFrontUVs(body.geometry);
         this.body = body;
-        this.bodyMat = new THREE.MeshStandardMaterial({ map: tex, normalMap: normalTex, normalScale: new THREE.Vector2(0.35, 0.35), roughness: 0.55, metalness: 0.05 });
+        // Preserve exact flag colors: lighting and the decorative normal map washed out pale stripes and emblems on mobile.
+        this.bodyMat = new THREE.MeshBasicMaterial({ map: tex, color: 0xffffff, side: THREE.DoubleSide, toneMapped: false });
         body.material = this.bodyMat;
       }
     });

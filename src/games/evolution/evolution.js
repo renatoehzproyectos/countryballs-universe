@@ -16,6 +16,7 @@ import { mountJoystick } from '../../ui/joystick.js';
 import { openShop, openInventory, openCollection } from '../../ui/panels.js';
 import { buildArena, SHAPES, ARENA } from './world.js';
 import { EMPIRES } from '../../data/empires.js';
+import { multiplayer } from '../../core/multiplayer.js';
 
 const eyeG = new THREE.SphereGeometry(0.2, 8, 6), pupG = new THREE.SphereGeometry(0.1, 6, 4);
 const eyeM = new THREE.MeshBasicMaterial({ color: '#fff' }), pupM = new THREE.MeshBasicMaterial({ color: '#000' });
@@ -47,8 +48,17 @@ export default class EvolutionGame {
     this.offs = [bus.on('change', () => this.#refreshHud()), bus.on('ball-changed', () => this.#refreshPlayer())];
     if (!unlocked(this.def, this.ev)) store.mutate(s => { s.evolution.world = 'europe'; });
     this.loadWorld(this.ev.world); this.hp = this.maxHp;
+    this.remoteBalls = new Map();
+    this.mpOffs = [multiplayer.on('player-state', p => this.#remoteState(p)), multiplayer.on('player-left', p => this.#remoteLeft(p))];
     this.#syncPets(); toast('¡Muévete con el joystick! Atacas solo. Salta 🦘 para esquivar.');
   }
+
+  #remoteState(data) {
+    if(data.scene!=='evolution'||data.world!==this.ev.world){this.#remoteLeft({id:data.id});return;}
+    let entry=this.remoteBalls.get(data.id);if(!entry){const def=Object.values(BALL_BY_ID).find(b=>b.flag===data.flag)||BALL_BY_ID.pl;const ball=new LiteBall({flag:def.flag,size:1});this.scene.add(ball.group);entry={ball};this.remoteBalls.set(data.id,entry);}
+    entry.ball.group.position.set(data.x,data.y||1,data.z);entry.ball.group.rotation.y=data.rotation||0;
+  }
+  #remoteLeft({id,all}={}) {for(const [key,e] of this.remoteBalls)if(all||key===id){this.scene.remove(e.ball.group);e.ball.dispose();this.remoteBalls.delete(key);}}
 
   // ------------------------------------------------------------------ world
   loadWorld(id) {
@@ -217,6 +227,7 @@ export default class EvolutionGame {
 
   // ------------------------------------------------------------------ loop
   update(dt, t) {
+    this.mpTimer=(this.mpTimer||0)-dt;if(this.mpTimer<=0){this.mpTimer=0.1;multiplayer.sendState('evolution',this.player.group.position,this.player.group.rotation.y);}
     const p = this.player.group, m = getMultipliers(), ax = input.axis();
     if (this.dead > 0) { this.dead -= dt; if (this.dead <= 0) { this.hp = this.maxHp; p.position.set(0, 1, 6); this.invuln = 2; } }
     else {
@@ -301,7 +312,7 @@ export default class EvolutionGame {
   }
 
   unmount() {
-    this.offs?.forEach(f => f()); this.joyOff?.(); this.hudEls?.forEach(e => e.remove()); this.bossUi?.remove();
+    this.offs?.forEach(f => f()); this.mpOffs?.forEach(f=>f()); this.#remoteLeft({all:true}); this.joyOff?.(); this.hudEls?.forEach(e => e.remove()); this.bossUi?.remove();
     this.pets.forEach(p => p.ball.dispose()); this.player.dispose(); disposeScene(this.scene); this.scene.clear(); this.coinGeo.dispose(); this.coinMat.dispose();
   }
 }

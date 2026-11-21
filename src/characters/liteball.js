@@ -19,7 +19,8 @@ export class LiteBall {
   constructor({ flag, size = 1, angry = false, tint = null } = {}) {
     this.group = new THREE.Group(); this.pivot = new THREE.Group(); this.group.add(this.pivot);
     this.group.scale.setScalar(size); this.radius = 1;
-    this.mat = new THREE.MeshStandardMaterial({ color: tint ?? '#ffffff', roughness: 0.6, metalness: 0.05 });
+    // Unlit material preserves every flag's original colors on mobile screens.
+    this.mat = new THREE.MeshBasicMaterial({ color: tint ?? '#ffffff', side: THREE.DoubleSide, toneMapped: false });
     this.pivot.add(new THREE.Mesh(body, this.mat));
     for (const sx of [-1, 1]) {
       const e = new THREE.Mesh(eyeG, eyeM); e.position.set(sx * 0.32, 0.18, 0.88); e.scale.set(1, 1.35, 0.5);

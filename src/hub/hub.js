@@ -11,6 +11,7 @@ import { h, ui, ballAvatar, fmt, modal } from '../ui/dom.js';
 import { mountJoystick } from '../ui/joystick.js';
 import { openShop, openInventory, openCollection, openProfile } from '../ui/panels.js';
 import { profileXpNeeded } from '../core/economy.js';
+import { multiplayer } from '../core/multiplayer.js';
 
 const label = (text, color = '#ffc933', w = 512) => {
   const c = document.createElement('canvas'); c.width = w; c.height = 128; const g = c.getContext('2d');
@@ -37,6 +38,8 @@ export class Hub {
     this.shadow = new THREE.Mesh(new THREE.CircleGeometry(0.9, 16), new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: 0.28 }));
     this.shadow.rotation.x = -Math.PI / 2; this.shadow.position.y = 0.02; sc.add(this.shadow);
     this.#spawnCrowd(); this.#bindInput(); this.#buildHud();
+    this.remoteBalls = new Map();
+    this.mpOffs = [multiplayer.on('player-state', p => this.#remoteState(p)), multiplayer.on('player-left', p => this.#remoteLeft(p))];
     this.off = bus.on('ball-changed', () => this.#refreshPlayer());
     this.offChange = bus.on('change', () => this.#updateHud());
     this.#updateHud(); this.#dailyReward();
@@ -143,7 +146,7 @@ export class Hub {
 
   #buildHud() {
     this.joyOff = mountJoystick();
-    this.hudTop = h('div.hud-top'); this.dock = h('div.dock', { style: { gap: '8px' } },
+    this.hudTop = h('div.hud-top'); this.mpButton = h('button.btn.sm', { style: { position: 'fixed', right: '12px', top: 'calc(62px + env(safe-area-inset-top))', zIndex: 8 }, onclick: () => multiplayer.openMenu() }, '🌐 Multijugador'); this.dock = h('div.dock', { style: { gap: '8px' } },
       h('button.btn.icon-btn', { onclick: () => openShop() }, '🛒', h('small', 'Tienda')),
       h('button.btn.icon-btn', { onclick: () => openInventory() }, '🎒', h('small', 'Armario')),
       h('button.btn.gold.play', { onclick: () => this.openGames() }, '▶ JUGAR'),
@@ -153,8 +156,16 @@ export class Hub {
     this.prompt = h('button.btn.green.prompt', { style: { display: 'none' }, onclick: () => this.near?.action() });
     this.mission = h('div.chip.mission'); this.jumpBtn = h('button.btn.gold.jump', { onclick: () => { input.jump = true; } }, '🦘');
     this.emoteBtn = h('button.btn.icon-btn', { style: { position: 'fixed', left: '22px', bottom: 'calc(170px + env(safe-area-inset-bottom))' }, onclick: () => this.#emote() }, '😄');
-    ui().append(this.hudTop, this.dock, this.prompt, this.mission, this.jumpBtn, this.emoteBtn);
+    ui().append(this.hudTop, this.dock, this.prompt, this.mission, this.jumpBtn, this.emoteBtn, this.mpButton);
   }
+
+  #remoteState(data) {
+    if (data.scene !== 'hub') { this.#remoteLeft({ id: data.id }); return; }
+    let entry=this.remoteBalls.get(data.id);
+    if(!entry){const def=Object.values(BALL_BY_ID).find(b=>b.flag===data.flag)||BALL_BY_ID.pl;const ball=new LiteBall({flag:def.flag,size:1});this.scene.add(ball.group);entry={ball};this.remoteBalls.set(data.id,entry);}
+    entry.ball.group.position.set(data.x,data.y||1,data.z);entry.ball.group.rotation.y=data.rotation||0;
+  }
+  #remoteLeft({id,all}={}) { for(const [key,e] of this.remoteBalls) if(all||key===id){this.scene.remove(e.ball.group);e.ball.dispose();this.remoteBalls.delete(key);} }
 
   #emote() { this.spin = 1; this.vy = Math.max(this.vy, 8); sfx.levelUp(); this.player.setHappy(true); setTimeout(() => this.player.setHappy(false), 1500); }
 
@@ -194,6 +205,7 @@ export class Hub {
   }
 
   update(dt, t) {
+    this.mpTimer=(this.mpTimer||0)-dt; if(this.mpTimer<=0){this.mpTimer=0.1;multiplayer.sendState('hub',this.player.group.position,this.player.group.rotation.y);}
     const p = this.player.group, ax = input.axis();
     const fwd = new THREE.Vector3(-Math.sin(this.camYaw), 0, -Math.cos(this.camYaw)), right = new THREE.Vector3(Math.cos(this.camYaw), 0, -Math.sin(this.camYaw));
     const dir = new THREE.Vector3().addScaledVector(right, ax.x).addScaledVector(fwd, -ax.y);
@@ -226,8 +238,8 @@ export class Hub {
   }
 
   unmount() {
-    this.unbind?.(); this.joyOff?.(); this.off?.(); this.offChange?.();
-    this.hudTop?.remove(); this.dock?.remove(); this.prompt?.remove(); this.mission?.remove(); this.jumpBtn?.remove(); this.emoteBtn?.remove();
+    this.unbind?.(); this.joyOff?.(); this.off?.(); this.offChange?.(); this.mpOffs?.forEach(fn=>fn()); this.#remoteLeft({all:true});
+    this.hudTop?.remove(); this.mpButton?.remove(); this.dock?.remove(); this.prompt?.remove(); this.mission?.remove(); this.jumpBtn?.remove(); this.emoteBtn?.remove();
     this.player?.dispose(); this.wanderers.forEach(w => w.ball.dispose()); disposeScene(this.scene);
   }
 }

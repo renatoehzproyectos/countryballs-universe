@@ -70,3 +70,14 @@ Rehecha siguiendo el análisis de *Take Over The World!*:
 ## Corrección global de banderas en Countryballs
 
 Todas las banderas ahora conservan la proporción de su archivo original al proyectarse sobre la cara frontal de la esfera. Se elimina el estiramiento cuadrado que deformaba cruces, estrellas, franjas, escudos y cantones. Los espacios de adaptación se rellenan extendiendo los píxeles del borde de la propia bandera, evitando recortes y evitando dejar zonas transparentes. Se aplica automáticamente a banderas ISO, banderas históricas personalizadas y Countryballs desbloqueables.
+
+
+## 🌐 Multijugador por código
+
+- En el mundo central, pulsa **🌐 Multijugador**.
+- El anfitrión crea una sala y comparte el código numérico de 4 dígitos.
+- Los visitantes escriben ese código y pulsan **Unirse a sala**.
+- Hasta 8 visitantes pueden conectarse; sus Countryballs se ven en tiempo real en el hub y en el mismo mundo de Evolución.
+- La conexión usa WebRTC mediante PeerJS y requiere Internet. No necesita configurar un servidor propio.
+- Los perfiles y recompensas se guardan localmente en cada dispositivo. Conquista Mundial y Adivina la Bandera todavía no comparten una partida sincronizada en esta versión.
+- Ejecuta `npm install` para instalar PeerJS y despliega el proyecto normalmente en Vercel/HTTPS.
