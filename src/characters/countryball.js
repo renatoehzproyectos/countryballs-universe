@@ -63,7 +63,8 @@ export async function getFlagTexture(key) {
   const sh = img.naturalHeight || img.height || 2;
   // A flag covers the full sphere. A small aspect adaptation is preferable to
   // cropping important details such as stars, suns, crosses or coats of arms.
-  g.drawImage(img, 0, 0, sw, sh, 0, 0, W, H);
+  // 5-arg form: SVGs with only a viewBox have no intrinsic size, so never use a source rect.
+  g.drawImage(img, 0, 0, W, H);
 
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
